@@ -34,7 +34,8 @@ class Hit:
 
 
 class Retriever:
-    def __init__(self, embedding_model: str | None = None, rerank_model: str | None = None):
+    def __init__(self, embedding_model: str | None = None, rerank_model: str | None = None,
+                 use_instruction: bool | None = None):
         self.embedding_model = embedding_model or settings.embedding_model
         self.column = settings.embedding_column(self.embedding_model)
         self.ts_config = "english"  # must match chunks.tsv: to_tsvector('english', text)
@@ -43,12 +44,17 @@ class Retriever:
         self.reranker = CrossEncoder(rerank_model or settings.rerank_model, device=self.device)
         if settings.torch_dtype == "fp16" and self.device in ("cuda", "mps"):
             self.reranker.model.half()                               # reranker at the held dtype
+        # bge asymmetric query instruction (query only). Off for non-bge models.
+        use = settings.use_query_instruction if use_instruction is None else use_instruction
+        self.query_instruction = (
+            settings.query_instruction if (use and "bge" in self.embedding_model.lower()) else ""
+        )
 
     # ---- session + symmetry assertions ----
     def configure_session(self, conn) -> None:
-        # The HNSW index spans all runs; we filter to one. Iterative scan + a wide
-        # ef_search keep within-run top-k accurate rather than approximate.
-        conn.execute("SET hnsw.iterative_scan = strict_order")
+        # With per-run partial indexes (scripts/build_run_indexes.py) each query hits
+        # an index holding only its own run, so no iterative scan is needed — latency
+        # no longer depends on run selectivity. A wide ef_search keeps recall high.
         conn.execute(f"SET hnsw.ef_search = {max(100, settings.retrieval_depth * 2)}")
 
     def assert_symmetry(self, conn) -> None:
@@ -63,7 +69,11 @@ class Retriever:
 
     # ---- query embedding (same model/dtype/normalization as chunks) ----
     def embed_query(self, query: str) -> np.ndarray:
-        v = self.embed_model.encode([query], normalize_embeddings=True, convert_to_numpy=True)[0]
+        instr = self.query_instruction
+        if instr and not instr.endswith(" "):
+            instr += " "
+        q = instr + query
+        v = self.embed_model.encode([q], normalize_embeddings=True, convert_to_numpy=True)[0]
         v = v.astype(np.float32)
         norm = float(np.linalg.norm(v))
         assert abs(norm - 1.0) <= 1e-3, f"query vector not normalized: ‖q‖={norm}"
@@ -73,11 +83,13 @@ class Retriever:
     def vector(self, conn, query: str, run_id: int, depth: int | None = None) -> list[Hit]:
         depth = depth or settings.retrieval_depth
         qv = self.embed_query(query)
+        # run_id is inlined (it is our own int) so the WHERE predicate is a literal the
+        # planner can match to the per-run partial HNSW index's predicate.
         rows = conn.execute(
             f"SELECT id, 1 - ({self.column} <=> %s) AS score FROM chunks "
-            f"WHERE ingestion_run_id = %s AND {self.column} IS NOT NULL "
+            f"WHERE ingestion_run_id = {int(run_id)} AND {self.column} IS NOT NULL "
             f"ORDER BY {self.column} <=> %s LIMIT %s",
-            (qv, run_id, qv, depth),
+            (qv, qv, depth),
         ).fetchall()
         return [Hit(r[0], float(r[1])) for r in rows]
 

@@ -48,6 +48,8 @@ def main() -> int:
         ).fetchall()
         rank1 = 0
         misses = []
+        saved = r.query_instruction
+        r.query_instruction = ""  # symmetric: a chunk's own text must retrieve itself (pure plumbing)
         for cid, text in sample:
             hits = r.vector(conn, text, run_id, depth=10)
             rank = next((i + 1 for i, h in enumerate(hits) if h.chunk_id == cid), None)
@@ -55,7 +57,8 @@ def main() -> int:
                 rank1 += 1
             else:
                 misses.append((cid, rank))
-        print(f"\nSELF-RETRIEVAL (vector-only, {N_SELF} random chunks as their own query): "
+        r.query_instruction = saved
+        print(f"\nSELF-RETRIEVAL (vector-only, no instruction, {N_SELF} random chunks as their own query): "
               f"{rank1}/{N_SELF} returned themselves at rank 1")
         if misses:
             print("  misses (chunk_id, rank):", misses)

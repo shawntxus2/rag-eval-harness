@@ -295,7 +295,11 @@ cosine result with no error, so this check gates Phase 3.
 - **vector** — HNSW cosine over the model's embedding column
 - **lexical** — `ts_rank_cd` over the `tsv` column; the query is reduced to
   `english`-normalized lexemes (same config as `tsv`) and **OR-ed, not AND-ed**, so a
-  chunk matching any term ranks (AND semantics gives ~zero recall on NL questions)
+  chunk matching any term ranks (AND semantics gives ~zero recall on NL questions).
+  **Caveat (stated for credibility): this is Postgres full-text search with
+  `ts_rank_cd`, which has no IDF term weighting — it is not BM25.** That is why the
+  lexical arm can surface passages dense in common words; a true BM25 implementation
+  would narrow the gap against hybrid. The arm is left as-is and named honestly.
 - **hybrid** — Reciprocal Rank Fusion (`RRF_K=60`) of the vector and lexical lists
 - **hybrid_rerank** — a `bge-reranker-base` cross-encoder rescoring of hybrid's top `TOP_K`
 
@@ -305,10 +309,19 @@ Getting it right:
 2. **Query/chunk symmetry, asserted not assumed.** The query is embedded with the same
    model, dtype (fp16) and normalization as the chunks; `‖q‖≈1` is asserted per query, and
    the lexical config is asserted to match the `tsv` generation expression. The bge s2p
-   query-instruction prefix is deliberately **omitted** to keep query and chunk embeddings
-   strictly symmetric (revisit if vector recall underperforms in Phase 4). Because the HNSW
-   index spans all three runs, within-run queries set `hnsw.iterative_scan=strict_order`
-   and a wide `ef_search` so the run filter doesn't silently degrade recall.
+   query instruction (`"Represent this sentence for searching relevant passages: "`, query
+   only — per the model card) is **ON** (`USE_QUERY_INSTRUCTION`), chosen by A/B in
+   `scripts/instruction_ab.py`: over 19 matched (query, gold) pairs, vector-only with the
+   instruction beat without on 6 pairs, lost on 2, tied on 11 (top-1 2 vs 1, top-5 4 vs 1),
+   winning on exactly the paraphrase queries it should. This follows documented bge usage
+   rather than deviating from it.
+   **Vector latency confound removed:** rather than filter one shared all-runs HNSW index
+   (whose latency then tracked run *selectivity* — the 14%-of-corpus 1000-run was the
+   *slowest* at 3.98 ms, not the fastest), there is now one **partial HNSW index per run
+   per model** (`scripts/build_run_indexes.py`, six indexes), the run_id is inlined so the
+   planner matches each, and `iterative_scan` is dropped. Latency is now monotonic in each
+   run's own index size (1000-run 2.07 ms → 250-run 2.63 ms) — a real property, not an
+   artifact.
 3. **Reranker loaded once** at `Retriever` construction (fp16), never per query.
 4. **Latency discipline** (`scripts/phase3_check.py`): a warmup pass is discarded, and the
    query-embed step is timed separately from the retrieval step. p50/p95 over the full

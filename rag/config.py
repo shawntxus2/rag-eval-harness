@@ -35,6 +35,13 @@ class Settings:
     embedding_model: str = os.getenv("EMBEDDING_MODEL", "BAAI/bge-base-en-v1.5")
     embed_batch_size: int = _int("EMBED_BATCH_SIZE", 64)
     device: str = os.getenv("DEVICE", "auto")
+    # bge-*-en-v1.5 is trained asymmetric: an instruction prefix on the QUERY only
+    # (never on passages) for s2p retrieval. Toggle + string; default set by the A/B
+    # in scripts/instruction_ab.py. Ignored for non-bge models.
+    use_query_instruction: bool = os.getenv("USE_QUERY_INSTRUCTION", "true").lower() == "true"
+    query_instruction: str = os.getenv(
+        "QUERY_INSTRUCTION", "Represent this sentence for searching relevant passages: "
+    )
     # Inference precision, held constant across ALL model runs (embedding AND the
     # cross-encoder reranker) so the latency comparison is apples-to-apples. fp16
     # on this GPU is ~3.9x faster than fp32 with top-10 retrieval ranking 99.7%
