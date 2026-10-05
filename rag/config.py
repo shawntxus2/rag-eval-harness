@@ -35,6 +35,11 @@ class Settings:
     embedding_model: str = os.getenv("EMBEDDING_MODEL", "BAAI/bge-base-en-v1.5")
     embed_batch_size: int = _int("EMBED_BATCH_SIZE", 64)
     device: str = os.getenv("DEVICE", "auto")
+    # Inference precision, held constant across ALL model runs (embedding AND the
+    # cross-encoder reranker) so the latency comparison is apples-to-apples. fp16
+    # on this GPU is ~3.9x faster than fp32 with top-10 retrieval ranking 99.7%
+    # identical (see scripts/dtype_bench.py). Recorded per run in eval_runs.dtype.
+    torch_dtype: str = os.getenv("TORCH_DTYPE", "fp16")
 
     chunk_size: int = _int("CHUNK_SIZE", 500)
     chunk_overlap: int = _int("CHUNK_OVERLAP", 50)

@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS eval_runs (
     rrf_k              INTEGER,                      -- null unless a fusion mode
     top_k              INTEGER NOT NULL,            -- candidate depth used for the run
     correctness_rule   TEXT NOT NULL,               -- 'exact_chunk' | 'span_overlap' | 'same_page'
+    dtype              TEXT,                         -- inference precision that produced the latency ('fp16'|'bf16'|'fp32')
     num_questions      INTEGER NOT NULL,
     recall_at_5        DOUBLE PRECISION,
     recall_at_10       DOUBLE PRECISION,
@@ -131,6 +132,10 @@ CREATE TABLE IF NOT EXISTS eval_runs (
     git_sha            TEXT,
     created_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Backfill the dtype column onto any eval_runs table created before it existed
+-- (CREATE TABLE IF NOT EXISTS above is a no-op on an existing table).
+ALTER TABLE eval_runs ADD COLUMN IF NOT EXISTS dtype TEXT;
 
 -- Per-question detail behind each eval_run, for drill-down and debugging.
 CREATE TABLE IF NOT EXISTS eval_results (

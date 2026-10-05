@@ -232,7 +232,9 @@
         "chars": 4203
       }
     ],
-    "source_note": "live DTCC URL now 404 (CDN migration); retrieved via Wayback Machine id_ snapshot of the official URL"
+    "source_url_status": "404 at retrieval (DTCC CDN migration)",
+    "snapshot_url": "https://web.archive.org/web/20260909200433id_/https://www.dtcc.com/-/media/Files/Downloads/legal/policy-and-compliance/DTC_Disclosure_Framework.pdf",
+    "snapshot_captured": "2026-09-09T20:04:33Z"
   },
   {
     "filename": "dtcc_2024_nscc_disclosure_framework.pdf",
@@ -259,7 +261,9 @@
         "chars": 2311
       }
     ],
-    "source_note": "live DTCC URL now 404 (CDN migration); retrieved via Wayback Machine id_ snapshot of the official URL"
+    "source_url_status": "404 at retrieval (DTCC CDN migration)",
+    "snapshot_url": "https://web.archive.org/web/20260807023318id_/https://www.dtcc.com/-/media/Files/Downloads/legal/policy-and-compliance/NSCC-DISCLOSURE-FRAMEWORK-2024-Q3-Q4.pdf",
+    "snapshot_captured": "2026-08-07T02:33:18Z"
   },
   {
     "filename": "dtcc_2025_ficc_disclosure_framework.pdf",
@@ -286,7 +290,9 @@
         "chars": 4388
       }
     ],
-    "source_note": "live DTCC URL now 404 (CDN migration); retrieved via Wayback Machine id_ snapshot of the official URL"
+    "source_url_status": "404 at retrieval (DTCC CDN migration)",
+    "snapshot_url": "https://web.archive.org/web/20251001183255id_/https://www.dtcc.com/-/media/Files/Downloads/legal/policy-and-compliance/FICC-Disclosure-Framework-2025-Q2.pdf",
+    "snapshot_captured": "2025-10-01T18:32:55Z"
   },
   {
     "filename": "fed_2023_payment_system_risk_policy.pdf",

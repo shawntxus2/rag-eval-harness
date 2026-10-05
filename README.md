@@ -168,13 +168,15 @@ than batch size. Measured on 288 real ~500-token corpus chunks (bge-base, batch 
 | bf16 | 176,823 | 3.9× | 0.99803 | 97.7% |
 | **fp16** | **177,016** | **3.9×** | **0.99976** | **99.7%** |
 
-Recommendation: **fp16** for embedding — a ~3.9× throughput win for essentially no
-retrieval cost (top-10 neighbours 99.7% identical to fp32; per-vector cosine 0.9998).
-bf16 is the same speed but agrees less well (97.7% top-10; it has fewer mantissa bits),
-so prefer fp16 unless numerical range becomes an issue. Batch size, by contrast, buys
-~0×. (No default changed — this is a recommendation; `scripts/dtype_bench.py` reproduces
-the table. Note: a synthetic near-duplicate corpus understates ranking agreement badly —
-measure on real chunks.)
+Decision: **fp16 is the default (`TORCH_DTYPE`), held constant across every run** —
+embedding *and* the cross-encoder reranker — so the latency comparison (a deliverable)
+is apples-to-apples. fp16 is ~3.9× faster than fp32 here for essentially no retrieval
+cost (top-10 neighbours 99.7% identical to fp32; per-vector cosine 0.9998). bf16 is the
+same speed but agrees less well (97.7% top-10; fewer mantissa bits). The reranker, not
+ingest, is why this matters — it dominates query latency. Batch size, by contrast, buys
+~0×. Every `eval_runs` row records the `dtype` that produced its latency.
+`scripts/dtype_bench.py` reproduces the table. (Caveat: a synthetic near-duplicate
+corpus understates ranking agreement badly — measure on real chunks.)
 
 ## Schema
 
