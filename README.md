@@ -24,7 +24,7 @@ Retrieval (Phase 3): vector (HNSW cosine) · lexical (ts_rank_cd) · hybrid (RRF
 Evaluation (Phase 4): recall@5/10, MRR, latency p50/p95  → eval_runs  → comparison table
    │
    ▼
-Generation (Phase 5): Claude (claude-sonnet-5, configurable) with required citations
+Generation (Phase 5): OpenAI (gpt-5.6-terra, configurable) with required citations
 UI (Phase 6): Streamlit — one page demo + an evaluation-table tab
 ```
 
@@ -32,8 +32,10 @@ UI (Phase 6): Streamlit — one page demo + an evaluation-table tab
   metadata, and eval results all live here. No separate vector DB. Runs in Docker.
 - **Embeddings:** local, via `sentence-transformers`. No embedding API calls. Uses
   CUDA if present, else MPS (Apple Silicon), else CPU.
-- **Generation:** Claude API, mid-tier `claude-sonnet-5` by default (configurable via
-  `CLAUDE_MODEL`).
+- **Generation:** OpenAI, mid-tier `gpt-5.6-terra` by default (configurable via
+  `GENERATION_MODEL`). The provider is a thin seam (`rag/generation.py`, selected by
+  `GENERATION_PROVIDER`): OpenAI is wired, Anthropic is a reserved branch. **Retrieval
+  evaluation (Phases 1–4) does not call it** — recall/latency never depend on an API key.
 - **Core pipeline is hand-built** — chunking, retrieval, RRF fusion, and reranking are
   written here, not pulled from LangChain/LlamaIndex/Haystack.
 
@@ -73,7 +75,9 @@ Every parameter is an environment variable (see `.env.example`). Copy it to `.en
 | `TOP_K` | `50` | candidate depth (hybrid → rerank takes top 50) |
 | `RERANK_MODEL` | `BAAI/bge-reranker-base` | cross-encoder reranker |
 | `CORRECTNESS_RULE` | `span_overlap` | what counts as a correct retrieval |
-| `CLAUDE_MODEL` | `claude-sonnet-5` | generation model |
+| `GENERATION_PROVIDER` | `openai` | generation provider seam (`openai` wired; `anthropic` reserved) |
+| `GENERATION_MODEL` | `gpt-5.6-terra` | generation model (must be reachable by your `OPENAI_API_KEY`) |
+| `OPENAI_API_KEY` | — | OpenAI key; read from env, never committed. Missing/rejected → fails loudly |
 
 ### Swapping the embedding model
 
@@ -83,38 +87,75 @@ to its own fixed-dimension column on `chunks` (`embedding_bge` 768, `embedding_m
 Adding a *new* model = add a column + partial HNSW index in `db/schema.sql` and an
 entry in `EMBEDDING_MODELS` in `rag/config.py`.
 
-## The `torch` pin, and why it MUST change on arm64 + CUDA
+## The ML stack pins: two sets, and why they differ
 
-`requirements.txt` pins **`torch==2.2.2`**. That number is a *development-machine
-floor*, not the intended production version:
+The ML stack (`torch`/`torchvision`/`sentence-transformers`/`transformers`) has to
+co-resolve as one set, and the right set depends entirely on the host. There are two:
 
-- **2.2.2 is the last `torch` release with an Intel-macOS (`x86_64`) wheel.** The repo
-  was bootstrapped on an Intel Mac, where `pip` offers nothing newer than 2.2.2 —
-  `torch==2.5.1` has **no installable wheel there** and fails at install time. 2.2.2 is
-  the highest version that installs on that host at all.
-- On generic **Linux + CUDA (x86_64)**, PyPI's 2.2.2 wheels are CUDA-enabled, so the
-  pin happens to work there unchanged.
-- **On arm64 + CUDA — including the NVIDIA DGX Spark (GB10 Grace-Blackwell) — the
-  2.2.2 pin WILL NOT WORK and MUST be bumped.** There is no aarch64 CUDA wheel for
-  2.2.2, and even if there were, Blackwell-class GPUs need a recent CUDA toolkit and a
-  correspondingly recent `torch`. Install the arm64 + CUDA build NVIDIA recommends for
-  the Spark instead. Typical flow:
+**Intel macOS set (bootstrap host, CPU only — torch ceiling 2.2.2):**
 
-  ```bash
-  # On the DGX Spark: install the CUDA/aarch64 torch FIRST, from the PyTorch index
-  # matching the Spark's CUDA toolkit (use NVIDIA's recommended build/index for GB10).
-  pip install torch --index-url https://download.pytorch.org/whl/cu128   # example index
+```
+torch==2.2.2          # last release with an Intel-macOS (x86_64) wheel
+sentence-transformers==3.3.1
+transformers==4.46.3
+numpy==1.26.4
+```
 
-  # Then edit requirements.txt: delete (or bump) the `torch==2.2.2` line so the rest of
-  # the install does not drag torch back down to 2.2.2, and install everything else:
-  pip install -r requirements.txt
-  ```
+`2.2.2` is a *development-machine floor*, not a production choice: it is the highest
+`torch` that installs on an Intel Mac at all (anything newer has no x86_64 wheel and
+fails at install time). This set is CPU-only and is **not** what ships in
+`requirements.txt` anymore — it is recorded here as the origin.
 
-  Verify GPU is live before embedding:
-  `python -c "import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))"`
+**arm64 + CUDA set (this machine — NVIDIA DGX Spark, GB10 Grace-Blackwell, sm_121,
+CUDA 13 — what `requirements.txt` now pins):**
+
+```
+--extra-index-url https://download.pytorch.org/whl/cu130
+torch==2.14.1+cu130
+torchvision==0.29.1+cu130
+sentence-transformers==6.1.0
+transformers==5.18.0
+numpy==2.5.3
+```
+
+Why they differ: the 2.2.2 pin **cannot work here** — there is no aarch64 CUDA wheel
+for it, and a Blackwell GPU needs a recent CUDA toolkit and a correspondingly recent
+`torch`. The DGX Spark is supported by PyTorch's **stable aarch64 `cu130` wheels**
+(the public build that matches the Spark's CUDA 13 driver; the NGC
+`nvcr.io/nvidia/pytorch` container ships the pre-release `2.10.0a0…nv` equivalent).
+Bumping `torch` dragged the whole set forward: `transformers` and
+`sentence-transformers` moved to current majors and `numpy` to 2.x. The `+cu130` local
+tags force pip to fetch the CUDA aarch64 wheels from the PyTorch index — never a CPU
+wheel from PyPI.
+
+Note on compute capability: GB10 is **sm_121**, but the `cu130` wheel's `arch_list`
+tops out at **sm_120** (no sm_121 cubin, no `compute_120` PTX). It still runs — sm_120
+binaries are forward-compatible within the Blackwell 12.x major — which is why the pin
+must be *verified with a real on-device kernel*, not just a successful install. Do that
+with `python scripts/gpu_check.py` (fails loudly, never falls back to CPU).
+
+Install flow on the Spark:
+
+```bash
+# torch/torchvision come from the cu130 index; the +cu130 pins make that unambiguous.
+pip install -r requirements.txt
+# Prove the GPU is real (device matmul verified vs CPU + a real embedding pass):
+python scripts/gpu_check.py
+```
 
 With `DEVICE=auto`, the embed/rerank code picks CUDA when `torch.cuda.is_available()`,
 else MPS on Apple Silicon, else CPU.
+
+### Embedding batch size on this hardware (`EMBED_BATCH_SIZE`, default 64)
+
+The default `64` was sized for a laptop CPU. On the GB10 the constraint inverts:
+**memory is a non-constraint** (unified 122 GiB pool; bge-base uses ~2.3 GiB per 1024
+~60-token chunks, so batches of many thousands fit), but **throughput does not improve
+with larger batches** — it is flat from batch 64→1024 (~710 embeddings/s for ~60-token
+chunks) and *degrades* past 1024 (the GPU is already compute-saturated at 64). Recommended
+`EMBED_BATCH_SIZE` here is **256** (amortizes per-call overhead vs 64 at ~1 GiB cost,
+no throughput penalty); anything in 128–512 is equivalent, and going to the thousands
+only wastes memory. (Left at the default in code; this is a recommendation.)
 
 ## Schema
 

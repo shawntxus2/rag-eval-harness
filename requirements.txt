@@ -11,16 +11,20 @@ pdfplumber==0.11.4
 pypdf==5.1.0
 
 # --- Embeddings / reranking (Phase 2) ---
-sentence-transformers==3.3.1
-transformers==4.46.3
-# torch 2.2.2 is the last version with an Intel-macOS (x86_64) wheel; on Linux,
-# PyPI ships CUDA-enabled 2.2.2 wheels, so this pin works on the GPU box too.
-# GPU-only users can bump this for a newer CUDA toolkit (see README).
-torch==2.2.2
-numpy==1.26.4
+# arm64 + CUDA set, resolved on the DGX Spark (GB10, sm_121, CUDA 13). See the
+# README "torch pin" section for the Intel-macOS set this replaced and why.
+# torch/torchvision carry a +cu130 local tag so pip can only fetch the CUDA
+# aarch64 wheels from the PyTorch index below — never a CPU wheel from PyPI.
+--extra-index-url https://download.pytorch.org/whl/cu130
+torch==2.14.1+cu130
+torchvision==0.29.1+cu130
+sentence-transformers==6.1.0
+transformers==5.18.0
+numpy==2.5.3
 
 # --- Generation ---
-anthropic==0.69.0
+# Provider is a config seam (rag/generation.py); OpenAI is the wired provider.
+openai==3.24.0
 
 # --- UI (Phase 6) ---
 streamlit==1.40.2

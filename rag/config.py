@@ -45,7 +45,11 @@ class Settings:
 
     correctness_rule: str = os.getenv("CORRECTNESS_RULE", "span_overlap")
 
-    claude_model: str = os.getenv("CLAUDE_MODEL", "claude-sonnet-5")
+    # --- Generation (Phase 5) ---
+    # Provider is a seam: 'openai' is wired today, 'anthropic' is reserved.
+    # The model id is a config value, never hardcoded at the call site.
+    generation_provider: str = os.getenv("GENERATION_PROVIDER", "openai")
+    generation_model: str = os.getenv("GENERATION_MODEL", "gpt-5.6-terra")
 
     def embedding_column(self, model: str | None = None) -> str:
         m = model or self.embedding_model

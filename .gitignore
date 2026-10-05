@@ -9,7 +9,9 @@ __pycache__/
 # --- Environment / secrets — never commit real credentials ---
 .env
 .env.*
-!.env.example          # the template IS tracked; real .env files are not
+# the template IS tracked; real .env files are not (inline comments are NOT
+# valid in .gitignore, so this negation must sit on its own line to take effect)
+!.env.example
 *.key
 *.pem
 
