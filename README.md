@@ -273,11 +273,26 @@ tokens** (so "size" means what the embedder sees), three runs at 250/500/1000 to
 with 10% overlap (25/50/100), loaded into `documents` / `ingestion_runs` / `chunks`
 (27 docs → 10,025 / 5,018 / 2,515 chunks). Embedding columns are left NULL for Phase 2.
 
+## Phase 2 — embedding & storage
+
+Every chunk is embedded by **both** models (`scripts/embed.py` → `rag/embed.py`):
+`BAAI/bge-base-en-v1.5` (768-dim) and `all-MiniLM-L6-v2` (384-dim), each into its own
+column, at the held-constant `fp16` precision, L2-normalized on write so cosine
+distance is a dot product (what the partial HNSW `vector_cosine_ops` indexes assume).
+Passages carry no instruction prefix (bge's query instruction is applied to queries
+in Phase 3). The script is resumable (only embeds NULL columns).
+
+**Normalization is verified, not assumed** — after writing, vectors are re-read from
+Postgres and their L2 norm checked: `max|‖v‖−1|` was 4.8e-4 (bge) / 4.7e-4 (MiniLM),
+within a 1e-3 tolerance (residual is fp16→float32 rounding). All 17,567 chunks embedded
+in both columns, 0 NULLs; a silent normalization failure would have degraded every
+cosine result with no error, so this check gates Phase 3.
+
 ## Status
 
 - [x] **Phase 0** — infrastructure, schema, pinned deps
 - [x] **Phase 1** — ingest & chunking (extraction constant, furniture stripped, 3 chunk sizes)
-- [ ] Phase 2 — embedding & storage
+- [x] **Phase 2** — embedding & storage (bge + MiniLM, fp16, normalized & verified)
 - [ ] Phase 3 — four retrieval modes
 - [ ] Phase 4 — evaluation (the deliverable)
 - [ ] Phase 5 — generation
