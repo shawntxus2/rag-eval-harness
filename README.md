@@ -234,10 +234,46 @@ encoder reranking) is what shifts dramatically from CPU to GPU.
   `python scripts/init_db.py` re-apply run without error.
 - **`torch` pin** — see the dedicated section above; bump it on the Spark.
 
+## Phase 1 — extraction, furniture, chunking
+
+**Extraction is held constant.** Every document is extracted with pypdf's default
+`extract_text()` (`rag/extract.py`) — one extractor, one setting, no per-publisher
+code — so that when a retrieval number looks wrong the extractor is never a suspect.
+pypdf reads single- and three-column pages in correct reading order; on Federal
+Register pages it hoists footnotes above the body (accepted: the text is real and
+correctly attributed, the only cost is chunk coherence). pdfplumber's default was
+rejected — it interleaves the three FR columns into fluent-looking nonsense.
+
+**Furniture removal** (`rag/furniture.py`) strips, without touching body or footnotes:
+1. Running headers/footers — a line in the top-3 or bottom-3 non-empty lines of a page
+   whose digit-masked key recurs on ≥50% of pages. Leading/trailing page-number tokens
+   are trimmed before keying so a page number that alternates prefix/suffix across
+   pages (BIS) collapses to one key instead of two sub-threshold variants.
+2. Federal Register typesetting footers (lines beginning `VerDate`).
+3. The FR vertical-sidebar watermark `<user> on DSK…PROD with RULES#`, removed as a
+   substring wherever it occurs — it also appears standalone on ~71 pages that the
+   `VerDate` anchor alone would miss.
+
+Footnotes are **kept** (they carry definitions eval questions target). `scripts/ingest.py`
+prints the per-document removal report; removal is ≤8% on every document, and anything
+>15% aborts the load for review rather than silently over-stripping.
+
+**Offset basis (important when tracing a chunk back to a page).**
+`chunks.char_start`/`char_end` are offsets into the **cleaned text** — after furniture
+removal, because that is what chunks are cut from — **not** raw-PDF offsets. The cleaned
+text is persisted per document at `corpus/cleaned/<name>.txt` (gitignored, regenerable
+by re-running ingest) so those offsets always resolve to something. `page_number`/
+`page_end` are mapped from per-page char spans recorded during cleaning.
+
+**Chunking** (`rag/chunk.py`) uses sliding windows measured in **bge-base tokenizer
+tokens** (so "size" means what the embedder sees), three runs at 250/500/1000 tokens
+with 10% overlap (25/50/100), loaded into `documents` / `ingestion_runs` / `chunks`
+(27 docs → 10,025 / 5,018 / 2,515 chunks). Embedding columns are left NULL for Phase 2.
+
 ## Status
 
 - [x] **Phase 0** — infrastructure, schema, pinned deps
-- [ ] Phase 1 — ingest & chunking
+- [x] **Phase 1** — ingest & chunking (extraction constant, furniture stripped, 3 chunk sizes)
 - [ ] Phase 2 — embedding & storage
 - [ ] Phase 3 — four retrieval modes
 - [ ] Phase 4 — evaluation (the deliverable)

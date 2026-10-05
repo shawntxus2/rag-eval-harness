@@ -29,6 +29,9 @@ postgres-data/
 # Keep the corpus/ directory itself (tracked via corpus/.gitkeep); ignore the PDFs.
 corpus/*.pdf
 corpus/*.PDF
+# Cleaned text persisted by scripts/ingest.py (derived from the PDFs; char
+# offsets in chunks index into these). Regenerable, local-only — like the PDFs.
+corpus/cleaned/
 
 # --- OS cruft ---
 .DS_Store
