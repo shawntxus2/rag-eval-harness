@@ -254,9 +254,12 @@ rejected — it interleaves the three FR columns into fluent-looking nonsense.
    substring wherever it occurs — it also appears standalone on ~71 pages that the
    `VerDate` anchor alone would miss.
 
-Footnotes are **kept** (they carry definitions eval questions target). `scripts/ingest.py`
-prints the per-document removal report; removal is ≤8% on every document, and anything
->15% aborts the load for review rather than silently over-stripping.
+Footnotes are **kept** (they carry definitions eval questions target). The first
+occurrence of each furniture line is preserved in every document and only its
+subsequent repeats are stripped, so no line is ever wholly deleted from the corpus
+and the detector never has to judge whether a repeated line is substantive.
+`scripts/ingest.py` prints the per-document removal report; removal is ≤8% on every
+document, and anything >15% aborts the load for review rather than silently over-stripping.
 
 **Offset basis (important when tracing a chunk back to a page).**
 `chunks.char_start`/`char_end` are offsets into the **cleaned text** — after furniture

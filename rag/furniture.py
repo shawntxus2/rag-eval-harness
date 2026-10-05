@@ -13,6 +13,10 @@ Rules (approved):
 Footnotes are KEPT deliberately: they carry definitions eval questions target,
 so stripping them would cap recall below what any retrieval strategy could fix.
 
+The FIRST occurrence of each furniture class is preserved per document and only
+its later repeats are stripped, so no line is ever wholly deleted from the corpus
+and the detector never has to be right about whether a repeated line is substantive.
+
 The text this returns is the CLEANED text. chunks.char_start/char_end are offsets
 into it (see README), and it is persisted per document so those offsets resolve.
 """
@@ -69,18 +73,27 @@ def _furniture_set(pages: list[str]) -> set[str]:
 
 def clean_document(pages: list[str]) -> CleanResult:
     furniture = _furniture_set(pages)
+    seen: set[str] = set()   # furniture identities whose first occurrence we have kept
     out_pages: list[str] = []
     page_spans: list[tuple[int, int, int]] = []
     stripped: dict = {}
     raw_chars = removed_chars = 0
     cursor = 0
 
-    def record(norm_key: str, line: str) -> None:
+    def record(key: str, example: str, line: str) -> None:
         nonlocal removed_chars
         removed_chars += len(line)
-        s = stripped.setdefault(norm_key, {"count": 0, "example": line.strip(), "chars": 0})
+        s = stripped.setdefault(key, {"count": 0, "example": example, "chars": 0})
         s["count"] += 1
         s["chars"] += len(line)
+
+    def first_or_strip(key: str, example: str, line: str, kept: list[str]) -> None:
+        """Preserve the first occurrence of a furniture class; strip the rest."""
+        if key in seen:
+            record(key, example, line)
+        else:
+            seen.add(key)
+            kept.append(line)
 
     for pageno, pg in enumerate(pages, start=1):
         ne = [l for l in pg.split("\n") if l.strip()]
@@ -90,24 +103,26 @@ def clean_document(pages: list[str]) -> CleanResult:
             raw_chars += len(line)
             # Rule 2: Federal Register print footer.
             if _VERDATE.match(line.strip()):
-                record("VerDate…", line)
+                first_or_strip("VerDate…", line.strip()[:88], line, kept)
                 continue
             # Rule 1: recurring header/footer at an edge position.
             if i in edge_idx and _norm(line) in furniture:
-                record(_norm(line), line)
+                first_or_strip(_norm(line), line.strip()[:88], line, kept)
                 continue
-            # Rule 3: watermark substring (standalone -> line vanishes; glued -> body kept).
+            # Rule 3: FR sidebar watermark.
             if _WATERMARK.search(line):
                 cleaned_line = _WATERMARK.sub("", line).strip()
+                if not cleaned_line:  # standalone watermark line -> a furniture class
+                    first_or_strip("…on DSK…PROD with RULES#", _WATERMARK.search(line).group(0), line, kept)
+                    continue
+                # glued to body text (not observed in this corpus): strip substring, keep body
                 removed_amt = len(line) - len(cleaned_line)
-                if removed_amt:
-                    s = stripped.setdefault("…on DSK…PROD with RULES#",
-                                            {"count": 0, "example": _WATERMARK.search(line).group(0), "chars": 0})
-                    s["count"] += 1
-                    s["chars"] += removed_amt
-                    removed_chars += removed_amt
-                if cleaned_line:
-                    kept.append(cleaned_line)
+                s = stripped.setdefault("…on DSK…PROD with RULES# (inline)",
+                                        {"count": 0, "example": _WATERMARK.search(line).group(0), "chars": 0})
+                s["count"] += 1
+                s["chars"] += removed_amt
+                removed_chars += removed_amt
+                kept.append(cleaned_line)
                 continue
             kept.append(line)
         page_text = "\n".join(kept)
