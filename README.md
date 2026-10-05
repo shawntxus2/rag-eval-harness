@@ -157,6 +157,25 @@ chunks) and *degrades* past 1024 (the GPU is already compute-saturated at 64). R
 no throughput penalty); anything in 128–512 is equivalent, and going to the thousands
 only wastes memory. (Left at the default in code; this is a recommendation.)
 
+### Embedding dtype — the knob that actually matters here (`scripts/dtype_bench.py`)
+
+The forward pass runs in **fp32** by default, and on this GPU dtype buys far more
+than batch size. Measured on 288 real ~500-token corpus chunks (bge-base, batch 64):
+
+| dtype | tokens/s | speedup | min cosine vs fp32 | top-10 ranking overlap vs fp32 |
+|---|---|---|---|---|
+| fp32 | 45,550 | 1.0× | 1.00000 | 100% |
+| bf16 | 176,823 | 3.9× | 0.99803 | 97.7% |
+| **fp16** | **177,016** | **3.9×** | **0.99976** | **99.7%** |
+
+Recommendation: **fp16** for embedding — a ~3.9× throughput win for essentially no
+retrieval cost (top-10 neighbours 99.7% identical to fp32; per-vector cosine 0.9998).
+bf16 is the same speed but agrees less well (97.7% top-10; it has fewer mantissa bits),
+so prefer fp16 unless numerical range becomes an issue. Batch size, by contrast, buys
+~0×. (No default changed — this is a recommendation; `scripts/dtype_bench.py` reproduces
+the table. Note: a synthetic near-duplicate corpus understates ranking agreement badly —
+measure on real chunks.)
+
 ## Schema
 
 Six tables (defined in `db/schema.sql`, applied idempotently). Your four core tables
