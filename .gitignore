@@ -30,3 +30,5 @@ corpus/*.PDF
 
 # --- OS cruft ---
 .DS_Store
+._*
+.DS_Store
