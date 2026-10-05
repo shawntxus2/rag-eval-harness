@@ -1,0 +1,30 @@
+# Pinned dependencies. DB + light deps are installed in Phase 0; the ML stack
+# (torch/sentence-transformers/transformers) is heavy and installed in Phase 2.
+# Verified to resolve together on CPython 3.12.
+
+# --- Database ---
+psycopg[binary]==3.2.3
+pgvector==0.3.6
+
+# --- PDF extraction ---
+pdfplumber==0.11.4
+pypdf==5.1.0
+
+# --- Embeddings / reranking (Phase 2) ---
+sentence-transformers==3.3.1
+transformers==4.46.3
+# torch 2.2.2 is the last version with an Intel-macOS (x86_64) wheel; on Linux,
+# PyPI ships CUDA-enabled 2.2.2 wheels, so this pin works on the GPU box too.
+# GPU-only users can bump this for a newer CUDA toolkit (see README).
+torch==2.2.2
+numpy==1.26.4
+
+# --- Generation ---
+anthropic==0.69.0
+
+# --- UI (Phase 6) ---
+streamlit==1.40.2
+
+# --- Utilities ---
+python-dotenv==1.0.1
+tqdm==4.67.1

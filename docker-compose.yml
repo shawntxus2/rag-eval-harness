@@ -1,0 +1,22 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: rag_pg
+    environment:
+      POSTGRES_USER: rag
+      POSTGRES_PASSWORD: rag
+      POSTGRES_DB: ragdb
+    ports:
+      - "5433:5432"          # host 5433 -> container 5432 (avoids clashing with a local Postgres)
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Auto-applied ONLY on first boot of an empty data volume. Re-apply with `python scripts/init_db.py`.
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/00_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U rag -d ragdb"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  pgdata:

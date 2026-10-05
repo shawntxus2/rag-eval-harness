@@ -1,0 +1,32 @@
+# --- Python ---
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# --- Environment / secrets — never commit real credentials ---
+.env
+.env.*
+!.env.example          # the template IS tracked; real .env files are not
+*.key
+*.pem
+
+# --- Postgres data ---
+# docker-compose uses a NAMED volume (rag-eval-harness_pgdata) that lives in
+# Docker's own storage, not in this tree — so there is normally nothing here to
+# ignore. These guard against a bind-mount or a stray local data dir landing in
+# the repo and being committed/rsynced by accident.
+pgdata/
+db_data/
+postgres-data/
+*.sqlite
+
+# --- Source PDFs: large binaries, do not belong in git history ---
+# Keep the corpus/ directory itself (tracked via corpus/.gitkeep); ignore the PDFs.
+corpus/*.pdf
+corpus/*.PDF
+
+# --- OS cruft ---
+.DS_Store
