@@ -1,0 +1,707 @@
+[
+  {
+    "filename": "bis_2012_pfmi_disclosure_framework.pdf",
+    "title": "Principles for financial market infrastructures: disclosure framework and assessment methodology",
+    "publisher": "CPMI-IOSCO (published by BIS)",
+    "publication_date": "2012-12-14",
+    "source_url": "https://www.bis.org/publications/principles-financial-market-infrastructures-disclosure-framework-and-assessment-methodology.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 109,
+    "sha256": "e941d2bb94a69ce9a922003c33e9b0ffc0ca0e7cb4afedafafa971f1a13140c0",
+    "layout_note": "two column, table heavy",
+    "in_target_range": false,
+    "samples": [
+      {
+        "page": 18,
+        "chars": 2896
+      },
+      {
+        "page": 54,
+        "chars": 3011
+      },
+      {
+        "page": 90,
+        "chars": 2254
+      }
+    ]
+  },
+  {
+    "filename": "bis_2016_fmi_cyber_resilience.pdf",
+    "title": "Guidance on cyber resilience for financial market infrastructures",
+    "publisher": "CPMI-IOSCO (published by BIS)",
+    "publication_date": "2016-06-29",
+    "source_url": "https://www.bis.org/publications/guidance-cyber-resilience-financial-market-infrastructures.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 32,
+    "sha256": "e5c143dfc596a24078b97f4b39d51e3a601647dff2ea112757e8a24ce091943e",
+    "layout_note": "single column",
+    "in_target_range": true,
+    "samples": [
+      {
+        "page": 5,
+        "chars": 4641
+      },
+      {
+        "page": 16,
+        "chars": 3856
+      },
+      {
+        "page": 26,
+        "chars": 2826
+      }
+    ]
+  },
+  {
+    "filename": "bis_2017_ccp_resilience_guidance.pdf",
+    "title": "Resilience of central counterparties (CCPs): Further guidance on the PFMI \u2014 Final report",
+    "publisher": "CPMI-IOSCO (published by BIS)",
+    "publication_date": "2017-07-05",
+    "source_url": "https://www.bis.org/publications/resilience-central-counterparties-ccps-further-guidance-pfmi-final-report.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 50,
+    "sha256": "50c9297b889ddafcc7a1211f38742ef5f585205b1478c8e2db1132b6f9e0ab81",
+    "layout_note": "single column",
+    "in_target_range": true,
+    "samples": [
+      {
+        "page": 8,
+        "chars": 3050
+      },
+      {
+        "page": 25,
+        "chars": 4353
+      },
+      {
+        "page": 41,
+        "chars": 4150
+      }
+    ]
+  },
+  {
+    "filename": "bis_2017_recovery_fmi_revised.pdf",
+    "title": "Recovery of financial market infrastructures \u2014 Revised report",
+    "publisher": "CPMI-IOSCO (published by BIS)",
+    "publication_date": "2017-07-05",
+    "source_url": "https://www.bis.org/publications/recovery-financial-market-infrastructures-revised-report.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 32,
+    "sha256": "4f9599e76e141e94f90c8aea2b2d8bd73c889039c00d2181f980c329c2899eb2",
+    "layout_note": "single column",
+    "in_target_range": true,
+    "samples": [
+      {
+        "page": 5,
+        "chars": 3177
+      },
+      {
+        "page": 16,
+        "chars": 4012
+      },
+      {
+        "page": 26,
+        "chars": 4688
+      }
+    ]
+  },
+  {
+    "filename": "bis_2022_review_margining_practices.pdf",
+    "title": "Review of margining practices",
+    "publisher": "BCBS-CPMI-IOSCO (published by BIS)",
+    "publication_date": "2022-09-29",
+    "source_url": "https://www.bis.org/publications/review-margining-practices.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 62,
+    "sha256": "bd4d52cd87d46dd9840701a26b5cc589abb3ffdf2763d11afba15ac3fe7a8817",
+    "layout_note": "single column, table heavy",
+    "in_target_range": true,
+    "samples": [
+      {
+        "page": 10,
+        "chars": 3941
+      },
+      {
+        "page": 31,
+        "chars": 2987
+      },
+      {
+        "page": 51,
+        "chars": 266
+      }
+    ]
+  },
+  {
+    "filename": "cftc_2012_cleared_swaps_customer_protection.pdf",
+    "title": "Protection of Cleared Swaps Customer Contracts and Collateral; Conforming Amendments to the Commodity Broker Bankruptcy Provisions",
+    "publisher": "CFTC / Federal Register",
+    "publication_date": "2012-02-07",
+    "source_url": "https://www.govinfo.gov/content/pkg/FR-2012-02-07/pdf/2012-1033.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 74,
+    "sha256": "fda9292ea42387aea2bcf1c74c734e4563591e1f695b2a5ba94d79ad2527e955",
+    "layout_note": "three column",
+    "in_target_range": true,
+    "samples": [
+      {
+        "page": 12,
+        "chars": 7981
+      },
+      {
+        "page": 37,
+        "chars": 7335
+      },
+      {
+        "page": 61,
+        "chars": 266
+      }
+    ]
+  },
+  {
+    "filename": "cftc_2013_sidco_enhanced_risk_management.pdf",
+    "title": "Enhanced Risk Management Standards for Systemically Important Derivatives Clearing Organizations",
+    "publisher": "CFTC / Federal Register",
+    "publication_date": "2013-12-02",
+    "source_url": "https://www.govinfo.gov/content/pkg/FR-2013-12-02/pdf/2013-27849.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 50,
+    "sha256": "6dbd4c549c86da3c617fac78c6e538f3863e343ec95611b8e13669bafc44b113",
+    "layout_note": "three column",
+    "in_target_range": true,
+    "samples": [
+      {
+        "page": 8,
+        "chars": 8177
+      },
+      {
+        "page": 25,
+        "chars": 7285
+      },
+      {
+        "page": 41,
+        "chars": 7870
+      }
+    ]
+  },
+  {
+    "filename": "cftc_2020_dco_general_provisions.pdf",
+    "title": "Derivatives Clearing Organization General Provisions and Core Principles (85 FR 4800)",
+    "publisher": "CFTC / Federal Register",
+    "publication_date": "2020-01-27",
+    "source_url": "https://www.govinfo.gov/content/pkg/FR-2020-01-27/pdf/2020-01065.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 102,
+    "sha256": "09ce8b7a73addda7fe15d5d16b0fdf1b567467607656ef69cafefa8736a23e8d",
+    "layout_note": "three column",
+    "in_target_range": false,
+    "samples": [
+      {
+        "page": 17,
+        "chars": 7887
+      },
+      {
+        "page": 51,
+        "chars": 6704
+      },
+      {
+        "page": 85,
+        "chars": 264
+      }
+    ]
+  },
+  {
+    "filename": "dtcc_2023_dtc_disclosure_framework.pdf",
+    "title": "The Depository Trust Company \u2014 Disclosure Framework for Covered Clearing Agencies and FMIs",
+    "publisher": "DTC (DTCC)",
+    "publication_date": "2023-03-01",
+    "source_url": "https://www.dtcc.com/-/media/Files/Downloads/legal/policy-and-compliance/DTC_Disclosure_Framework.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 136,
+    "sha256": "972209db2465682c5f21175ad227d8c9a45d6e7025500cd862ba8271c8855ccd",
+    "layout_note": "single column, table heavy",
+    "in_target_range": false,
+    "samples": [
+      {
+        "page": 22,
+        "chars": 5070
+      },
+      {
+        "page": 68,
+        "chars": 1523
+      },
+      {
+        "page": 113,
+        "chars": 4203
+      }
+    ],
+    "source_note": "live DTCC URL now 404 (CDN migration); retrieved via Wayback Machine id_ snapshot of the official URL"
+  },
+  {
+    "filename": "dtcc_2024_nscc_disclosure_framework.pdf",
+    "title": "National Securities Clearing Corporation \u2014 Disclosure Framework for Covered Clearing Agencies and FMIs",
+    "publisher": "NSCC (DTCC)",
+    "publication_date": "2024-12-01",
+    "source_url": "https://www.dtcc.com/-/media/Files/Downloads/legal/policy-and-compliance/NSCC-DISCLOSURE-FRAMEWORK-2024-Q3-Q4.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 130,
+    "sha256": "9509fd72246ce3b4683e1b04df5d824d6041e624d228ee64e3285631adada933",
+    "layout_note": "single column, table heavy",
+    "in_target_range": false,
+    "samples": [
+      {
+        "page": 21,
+        "chars": 3796
+      },
+      {
+        "page": 65,
+        "chars": 4561
+      },
+      {
+        "page": 108,
+        "chars": 2311
+      }
+    ],
+    "source_note": "live DTCC URL now 404 (CDN migration); retrieved via Wayback Machine id_ snapshot of the official URL"
+  },
+  {
+    "filename": "dtcc_2025_ficc_disclosure_framework.pdf",
+    "title": "Fixed Income Clearing Corporation (GSD and MBSD) \u2014 Disclosure Framework for Covered Clearing Agencies and FMIs",
+    "publisher": "FICC (DTCC)",
+    "publication_date": "2025-06-01",
+    "source_url": "https://www.dtcc.com/-/media/Files/Downloads/legal/policy-and-compliance/FICC-Disclosure-Framework-2025-Q2.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 130,
+    "sha256": "7b5ae57ce97b6b6f85282f0a5308b7d0c2820caf550adb25f2d21693bafc31c2",
+    "layout_note": "single column, table heavy",
+    "in_target_range": false,
+    "samples": [
+      {
+        "page": 21,
+        "chars": 4712
+      },
+      {
+        "page": 65,
+        "chars": 3686
+      },
+      {
+        "page": 108,
+        "chars": 4388
+      }
+    ],
+    "source_note": "live DTCC URL now 404 (CDN migration); retrieved via Wayback Machine id_ snapshot of the official URL"
+  },
+  {
+    "filename": "fed_2023_payment_system_risk_policy.pdf",
+    "title": "Federal Reserve Policy on Payment System Risk (as amended effective July 20, 2023)",
+    "publisher": "Federal Reserve",
+    "publication_date": "2023-07-20",
+    "source_url": "https://www.federalreserve.gov/paymentsystems/files/psr_policy.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 36,
+    "sha256": "e32ac6a2676c7cc31d1ab5ee25352501497cc7c804fc5b7210b6d568985278b8",
+    "layout_note": "single column",
+    "in_target_range": true,
+    "samples": [
+      {
+        "page": 6,
+        "chars": 3294
+      },
+      {
+        "page": 18,
+        "chars": 2251
+      },
+      {
+        "page": 30,
+        "chars": 4018
+      }
+    ]
+  },
+  {
+    "filename": "fed_2024_regulation_hh_fmu.pdf",
+    "title": "Financial Market Utilities \u2014 Regulation HH Operational Risk-Management (89 FR 18749)",
+    "publisher": "Federal Reserve",
+    "publication_date": "2024-03-15",
+    "source_url": "https://www.govinfo.gov/content/pkg/FR-2024-03-15/pdf/2024-05322.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 19,
+    "sha256": "a3b624aaeec350f3e60a98d3f5ef6c04963d75c20b323b4d94bd95655d9b8064",
+    "layout_note": "three column",
+    "in_target_range": false,
+    "samples": [
+      {
+        "page": 3,
+        "chars": 7935
+      },
+      {
+        "page": 9,
+        "chars": 7601
+      },
+      {
+        "page": 15,
+        "chars": 7385
+      }
+    ]
+  },
+  {
+    "filename": "finra_2021_4210_margin_order.pdf",
+    "title": "SR-FINRA-2021-010 (SEC Release 34-91937): Proposed Rule Change to Amend Covered Agency Transaction Requirements under FINRA Rule 4210 (Margin Requirements)",
+    "publisher": "FINRA (via SEC)",
+    "publication_date": "2021-05-19",
+    "source_url": "https://www.sec.gov/files/rules/sro/finra/2021/34-91937.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 33,
+    "sha256": "0b241aaaf39af1d2da6e1555aea88903a19a50461f06720646268b937bbf8217",
+    "layout_note": "single column",
+    "in_target_range": true,
+    "samples": [
+      {
+        "page": 5,
+        "chars": 1826
+      },
+      {
+        "page": 16,
+        "chars": 1262
+      },
+      {
+        "page": 27,
+        "chars": 1858
+      }
+    ]
+  },
+  {
+    "filename": "finra_2023_cat_clock_sync_rule_filing.pdf",
+    "title": "SR-FINRA-2023-003: Proposed Rule Change to Amend FINRA Rule 4590 (Synchronization of Member Business Clocks) re Consolidated Audit Trail (CAT)",
+    "publisher": "FINRA",
+    "publication_date": "2023-03-01",
+    "source_url": "https://www.finra.org/sites/default/files/2023-03/SR-FINRA-2023-003.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 44,
+    "sha256": "3248e7766e666ce6467bd6c84cef084c71c1bdda3981f52a8f79065fe55db26c",
+    "layout_note": "single column",
+    "in_target_range": true,
+    "samples": [
+      {
+        "page": 7,
+        "chars": 2020
+      },
+      {
+        "page": 22,
+        "chars": 1912
+      },
+      {
+        "page": 36,
+        "chars": 1598
+      }
+    ]
+  },
+  {
+    "filename": "finra_2023_sr_2021_010_order.pdf",
+    "title": "SR-FINRA-2021-010 (SEC Release 34-98003): Order Granting Approval of Rule Change to Amend FINRA Rule 4210 (Margin Requirements)",
+    "publisher": "FINRA (via SEC)",
+    "publication_date": "2023-07-27",
+    "source_url": "https://www.sec.gov/files/rules/sro/finra/2023/34-98003.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 97,
+    "sha256": "f3b807767190e264d73d2dad98ada889e6f90e6621877928da3c2ebaec1d4ec1",
+    "layout_note": "single column",
+    "in_target_range": true,
+    "samples": [
+      {
+        "page": 16,
+        "chars": 2263
+      },
+      {
+        "page": 48,
+        "chars": 2426
+      },
+      {
+        "page": 80,
+        "chars": 2906
+      }
+    ]
+  },
+  {
+    "filename": "occ_2002_asset_mgmt_ops_controls.pdf",
+    "title": "Asset Management Operations and Controls \u2014 Comptroller's Handbook (AM-2)",
+    "publisher": "OCC",
+    "publication_date": "2002-01-01",
+    "source_url": "https://www.occ.gov/publications-and-resources/publications/comptrollers-handbook/files/asset-mgmt-ops-controls/pub-ch-asset-mgmt-ops-controls.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 112,
+    "sha256": "e04ddc1cd01b93af9af05d2d4c135b243cb77ba9b7f3cabc4b41fd55509cfa84",
+    "layout_note": "single column",
+    "in_target_range": false,
+    "samples": [
+      {
+        "page": 18,
+        "chars": 2709
+      },
+      {
+        "page": 56,
+        "chars": 2513
+      },
+      {
+        "page": 93,
+        "chars": 1701
+      }
+    ]
+  },
+  {
+    "filename": "occ_2002_custody_services.pdf",
+    "title": "Custody Services \u2014 Comptroller's Handbook (Asset Management series)",
+    "publisher": "OCC",
+    "publication_date": "2002-01-01",
+    "source_url": "https://www.occ.gov/publications-and-resources/publications/comptrollers-handbook/files/custody-services/pub-ch-custody-services.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 107,
+    "sha256": "f8404b96f59c833b98bdf402820898f5a94e5258ae33c65fe31856bd87e208f7",
+    "layout_note": "single column",
+    "in_target_range": false,
+    "samples": [
+      {
+        "page": 17,
+        "chars": 2439
+      },
+      {
+        "page": 53,
+        "chars": 2113
+      },
+      {
+        "page": 89,
+        "chars": 1998
+      }
+    ]
+  },
+  {
+    "filename": "occ_2019_corporate_risk_governance.pdf",
+    "title": "Corporate and Risk Governance \u2014 Comptroller's Handbook (Safety and Soundness), Version 2.0",
+    "publisher": "OCC",
+    "publication_date": "2019-07-01",
+    "source_url": "https://www.occ.gov/publications-and-resources/publications/comptrollers-handbook/files/corporate-risk-governance/pub-ch-corporate-risk.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 127,
+    "sha256": "2df24c8831d6983949d2be742c98dc0867516b35afbb94b11991500cc1371787",
+    "layout_note": "single column",
+    "in_target_range": false,
+    "samples": [
+      {
+        "page": 21,
+        "chars": 2798
+      },
+      {
+        "page": 63,
+        "chars": 2093
+      },
+      {
+        "page": 105,
+        "chars": 1866
+      }
+    ]
+  },
+  {
+    "filename": "occ_2021_payment_systems.pdf",
+    "title": "Payment Systems and Funds Transfer Activities \u2014 Comptroller's Handbook, Version 1.0",
+    "publisher": "OCC",
+    "publication_date": "2021-10-01",
+    "source_url": "https://www.occ.gov/publications-and-resources/publications/comptrollers-handbook/files/payment-sys-funds-transfer-activities/pub-ch-payment-systems.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 110,
+    "sha256": "4ce3355e474967c5cd2fa03b32a0b1c68202e1df3c9ab251a2022145b68c1d80",
+    "layout_note": "single column",
+    "in_target_range": false,
+    "samples": [
+      {
+        "page": 18,
+        "chars": 3432
+      },
+      {
+        "page": 55,
+        "chars": 2787
+      },
+      {
+        "page": 91,
+        "chars": 2173
+      }
+    ]
+  },
+  {
+    "filename": "sec_2013_financial_responsibility_rules.pdf",
+    "title": "Financial Responsibility Rules for Broker-Dealers (net capital / customer protection amendments)",
+    "publisher": "SEC / Federal Register",
+    "publication_date": "2013-08-21",
+    "source_url": "https://www.govinfo.gov/content/pkg/FR-2013-08-21/pdf/2013-18734.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 84,
+    "sha256": "2c909525b99855ac6b2eb94950efb6a5dddf12e9ee47c8a10c651d81e6939c02",
+    "layout_note": "three column",
+    "in_target_range": true,
+    "samples": [
+      {
+        "page": 14,
+        "chars": 8598
+      },
+      {
+        "page": 42,
+        "chars": 8259
+      },
+      {
+        "page": 70,
+        "chars": 7860
+      }
+    ]
+  },
+  {
+    "filename": "sec_2014_regulation_sci.pdf",
+    "title": "Regulation Systems Compliance and Integrity (Regulation SCI)",
+    "publisher": "SEC / Federal Register",
+    "publication_date": "2014-12-05",
+    "source_url": "https://www.govinfo.gov/content/pkg/FR-2014-12-05/pdf/2014-27767.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 196,
+    "sha256": "a7adfd2b39f23bfa7edb95a426505b714bf1d4bf87841df302134e78ee419016",
+    "layout_note": "three column",
+    "in_target_range": false,
+    "samples": [
+      {
+        "page": 32,
+        "chars": 7989
+      },
+      {
+        "page": 98,
+        "chars": 8670
+      },
+      {
+        "page": 163,
+        "chars": 7908
+      }
+    ]
+  },
+  {
+    "filename": "sec_2016_covered_clearing_agencies.pdf",
+    "title": "Standards for Covered Clearing Agencies",
+    "publisher": "SEC / Federal Register",
+    "publication_date": "2016-10-13",
+    "source_url": "https://www.govinfo.gov/content/pkg/FR-2016-10-13/pdf/2016-23891.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 121,
+    "sha256": "7fab193e8cd6a9b65a737bca14ffc241e407ab2b343e048c9d8be0581a8301af",
+    "layout_note": "three column",
+    "in_target_range": false,
+    "samples": [
+      {
+        "page": 20,
+        "chars": 8100
+      },
+      {
+        "page": 60,
+        "chars": 8127
+      },
+      {
+        "page": 100,
+        "chars": 7967
+      }
+    ]
+  },
+  {
+    "filename": "sec_2023_clearing_agency_governance.pdf",
+    "title": "Clearing Agency Governance and Conflicts of Interest",
+    "publisher": "SEC / Federal Register",
+    "publication_date": "2023-12-05",
+    "source_url": "https://www.govinfo.gov/content/pkg/FR-2023-12-05/pdf/2023-25807.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 58,
+    "sha256": "cb4f9a5b91e3596d14462040b09325c00790e4791e37ef9ad07dd5a6fe72ff06",
+    "layout_note": "three column",
+    "in_target_range": true,
+    "samples": [
+      {
+        "page": 9,
+        "chars": 7902
+      },
+      {
+        "page": 29,
+        "chars": 8767
+      },
+      {
+        "page": 48,
+        "chars": 7979
+      }
+    ]
+  },
+  {
+    "filename": "sec_2023_short_sale_reporting.pdf",
+    "title": "Short Position and Short Activity Reporting by Institutional Investment Managers (Rule 13f-2 / Form SHO)",
+    "publisher": "SEC / Federal Register",
+    "publication_date": "2023-11-01",
+    "source_url": "https://www.govinfo.gov/content/pkg/FR-2023-11-01/pdf/2023-23050.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 89,
+    "sha256": "7300abfb5a206d52ef1703870666df37ab2c9137678ed816f3ca96e526e8106d",
+    "layout_note": "three column",
+    "in_target_range": true,
+    "samples": [
+      {
+        "page": 14,
+        "chars": 8785
+      },
+      {
+        "page": 44,
+        "chars": 7371
+      },
+      {
+        "page": 74,
+        "chars": 7968
+      }
+    ]
+  },
+  {
+    "filename": "sec_2023_t1_settlement_cycle.pdf",
+    "title": "Shortening the Securities Transaction Settlement Cycle",
+    "publisher": "SEC / Federal Register",
+    "publication_date": "2023-03-06",
+    "source_url": "https://www.govinfo.gov/content/pkg/FR-2023-03-06/pdf/2023-03566.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 83,
+    "sha256": "cdaf4f17a7bc0474e2ad1cd28c5c2078065a62e47290bdeeb9a46780eb83dbf4",
+    "layout_note": "three column",
+    "in_target_range": true,
+    "samples": [
+      {
+        "page": 13,
+        "chars": 7889
+      },
+      {
+        "page": 41,
+        "chars": 9612
+      },
+      {
+        "page": 69,
+        "chars": 8091
+      }
+    ]
+  },
+  {
+    "filename": "sec_2024_treasury_central_clearing.pdf",
+    "title": "Standards for Covered Clearing Agencies for U.S. Treasury Securities; Application of the Broker-Dealer Customer Protection Rule",
+    "publisher": "SEC / Federal Register",
+    "publication_date": "2024-01-16",
+    "source_url": "https://www.govinfo.gov/content/pkg/FR-2024-01-16/pdf/2023-27860.pdf",
+    "retrieval_date": "2026-10-05",
+    "page_count": 117,
+    "sha256": "3456a07b6375f0df2f752e6aef81f6457847952a0887dfff6a7090c05fba1830",
+    "layout_note": "three column",
+    "in_target_range": false,
+    "samples": [
+      {
+        "page": 19,
+        "chars": 8371
+      },
+      {
+        "page": 58,
+        "chars": 7988
+      },
+      {
+        "page": 97,
+        "chars": 7774
+      }
+    ]
+  }
+]
