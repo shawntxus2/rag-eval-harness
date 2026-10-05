@@ -45,10 +45,13 @@ class Settings:
     chunk_overlap: int = _int("CHUNK_OVERLAP", 50)
 
     rrf_k: int = _int("RRF_K", 60)
-    top_k: int = _int("TOP_K", 50)
+    retrieval_depth: int = _int("RETRIEVAL_DEPTH", 100)  # candidates each arm returns before fusion
+    top_k: int = _int("TOP_K", 50)                       # hybrid candidates handed to the reranker
     rerank_model: str = os.getenv("RERANK_MODEL", "BAAI/bge-reranker-base")
 
-    correctness_rule: str = os.getenv("CORRECTNESS_RULE", "span_overlap")
+    # Strict single-gold-chunk: a retrieval is correct iff the gold chunk itself is
+    # in the top-k (recorded decision; requires document-unique questions in Phase 4).
+    correctness_rule: str = os.getenv("CORRECTNESS_RULE", "exact_chunk")
 
     # --- Generation (Phase 5) ---
     # Provider is a seam: 'openai' is wired today, 'anthropic' is reserved.

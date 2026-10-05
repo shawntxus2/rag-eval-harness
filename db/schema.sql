@@ -99,9 +99,11 @@ CREATE TABLE IF NOT EXISTS eval_questions (
     status              TEXT    NOT NULL DEFAULT 'candidate'
                          CHECK (status IN ('candidate','approved','rejected')),
     verified_at         TIMESTAMPTZ,
+    uniqueness_anchor   TEXT,                      -- the detail that makes the question answerable from exactly one document (section/rule no., date, threshold, named entity, defined term) — required by strict single-gold-chunk correctness
     notes               TEXT,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE eval_questions ADD COLUMN IF NOT EXISTS uniqueness_anchor TEXT;
 
 CREATE INDEX IF NOT EXISTS eval_questions_verified_idx ON eval_questions (human_verified, status);
 

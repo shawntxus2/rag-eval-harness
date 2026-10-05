@@ -288,12 +288,55 @@ within a 1e-3 tolerance (residual is fp16→float32 rounding). All 17,567 chunks
 in both columns, 0 NULLs; a silent normalization failure would have degraded every
 cosine result with no error, so this check gates Phase 3.
 
+## Phase 3 — four retrieval modes
+
+`rag/retrieval.py` exposes four modes with one signature — `(conn, query, run_id, depth)
+→ list[Hit]` ranked by score:
+- **vector** — HNSW cosine over the model's embedding column
+- **lexical** — `ts_rank_cd` over the `tsv` column; the query is reduced to
+  `english`-normalized lexemes (same config as `tsv`) and **OR-ed, not AND-ed**, so a
+  chunk matching any term ranks (AND semantics gives ~zero recall on NL questions)
+- **hybrid** — Reciprocal Rank Fusion (`RRF_K=60`) of the vector and lexical lists
+- **hybrid_rerank** — a `bge-reranker-base` cross-encoder rescoring of hybrid's top `TOP_K`
+
+Getting it right:
+1. **Depth.** Each arm returns its top `RETRIEVAL_DEPTH=100` (not 10), so RRF fuses real
+   lists and the reranker has 50 real candidates to work from.
+2. **Query/chunk symmetry, asserted not assumed.** The query is embedded with the same
+   model, dtype (fp16) and normalization as the chunks; `‖q‖≈1` is asserted per query, and
+   the lexical config is asserted to match the `tsv` generation expression. The bge s2p
+   query-instruction prefix is deliberately **omitted** to keep query and chunk embeddings
+   strictly symmetric (revisit if vector recall underperforms in Phase 4). Because the HNSW
+   index spans all three runs, within-run queries set `hnsw.iterative_scan=strict_order`
+   and a wide `ef_search` so the run filter doesn't silently degrade recall.
+3. **Reranker loaded once** at `Retriever` construction (fp16), never per query.
+4. **Latency discipline** (`scripts/phase3_check.py`): a warmup pass is discarded, and the
+   query-embed step is timed separately from the retrieval step. p50/p95 over the full
+   question set is reported in Phase 4, not over ad hoc queries here.
+5. **Self-retrieval check:** 20 random chunks, each used as its own query — vector-only
+   returned the exact chunk at **rank 1, 20/20**. (If this failed, query embedding or
+   normalization would be broken and every downstream figure noise.)
+
+## Phase 4 — recorded decisions (before generation)
+
+- **Correctness is strict single-gold-chunk** (`CORRECTNESS_RULE=exact_chunk`): a retrieval
+  is correct iff the gold chunk itself is in the top-k — not a chunk that merely answers
+  the question.
+- That is only defensible if **questions are document-unique by construction**: every
+  question must contain a detail appearing in exactly one document (section/rule number,
+  specific date or threshold, named entity, or a term as that document defines it). A
+  question answerable from several publishers describing the same mechanism is rejected and
+  regenerated. The distinguishing detail is stored in `eval_questions.uniqueness_anchor`
+  for review.
+- **Stratify:** cap questions per document so the six SEC rules that hold **50.4%** of
+  chunks (recomputed: 8,850 / 17,567; Reg SCI alone 13.9%) do not hold half the questions.
+
 ## Status
 
 - [x] **Phase 0** — infrastructure, schema, pinned deps
 - [x] **Phase 1** — ingest & chunking (extraction constant, furniture stripped, 3 chunk sizes)
 - [x] **Phase 2** — embedding & storage (bge + MiniLM, fp16, normalized & verified)
-- [ ] Phase 3 — four retrieval modes
+- [x] **Phase 3** — four retrieval modes (same signature; symmetry asserted; self-retrieval 20/20)
 - [ ] Phase 4 — evaluation (the deliverable)
 - [ ] Phase 5 — generation
 - [ ] Phase 6 — Streamlit UI
