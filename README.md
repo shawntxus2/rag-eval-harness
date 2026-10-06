@@ -373,49 +373,80 @@ manifest to add it. (Cited generation and all retrieval/scoring need no per-corp
 ## Results
 
 Scored on **bge-base, fp16**, over **51 cited + 51 descriptive** questions, split by
-type and **never pooled** (`scripts/score.py` → `eval_runs`/`eval_results`). Retrieval
-is corpus-wide; a hit is a top-k chunk **from the gold document that fully contains the
-gold span**. recall@5 shown as rate (hits/51); `tok@5` = mean tokens across the top-5
-(the large-chunk bias, named); latency is the retrieval step, query-embed (~6 ms)
-excluded.
+type and **never pooled** (`scripts/score.py` → `eval_runs`/`eval_results`). Retrieval is
+corpus-wide; a hit is a top-k chunk **from the gold document that fully contains the gold
+span**. recall@5 as rate (hits/51). Five modes: vector, lexical, hybrid (RRF), hybrid+
+rerank, and **vector+rerank** (cross-encoder over vector's top 50, skipping lexical).
 
-| | 250 v / lex / hyb / rr | 500 v / lex / hyb / rr | 1000 v / lex / hyb / rr |
+**recall@5 — cited**
+
+| mode | 250 | 500 | 1000 |
 |---|---|---|---|
-| **cited** recall@5 | .47 / .24 / .41 / **.65** | .31 / .27 / .41 / **.69** | .31 / .25 / .39 / **.59** |
-| **descriptive** recall@5 | .24 / .10 / .16 / **.29** | **.41** / .16 / .27 / .33 | .35 / .20 / .25 / .27 |
-| tok@5 (both) | ~1,250 | ~2,500 | ~5,000 |
-| retrieval p50 (ms) | v≈3 lex≈110 hyb≈120 rr≈210 | v≈3 lex≈75 hyb≈76 rr≈207 | v≈3 lex≈46 hyb≈47 rr≈183 |
+| vector | .47 | .31 | .31 |
+| lexical | .24 | .27 | .25 |
+| hybrid | .41 | .41 | .39 |
+| hybrid+rerank | .65 | **.69** | .59 |
+| vector+rerank | **.73** | .65 | .61 |
 
-**Which differences are real (McNemar exact, paired hit@5, p<0.05):**
-- **hybrid+rerank > hybrid:** significant on cited at all three sizes (p≈.000/.000/.031);
-  on descriptive only at 250 (p=.039), not at 500/1000. Reranking helps most when the
-  query shares tokens with the passage; it stops paying off on pure-paraphrase queries.
-- **vector > lexical:** significant on descriptive 250 & 500 (p=.016/.007) and cited 250
-  (p=.004) — semantics earns its place when the user doesn't know the citation.
-- **hybrid > lexical:** significant on cited at all sizes; **hybrid vs vector: never
-  significant** — RRF of a strong vector arm and a weak lexical arm tracks vector.
+**recall@5 — descriptive**
 
-**The finding (and why the lexical caveat is load-bearing):** the feared citation-leak
-to lexical **did not materialise** — lexical is the *weakest* arm even on cited
-questions that contain the exact rule number. `ts_rank_cd` has **no IDF**, so the rare
-identifier that "should" hand retrieval to lexical is just one term among many and never
-dominates the ranking. A real BM25 arm would very likely reverse the cited column; the
-comparison is only honest with that named. Best single configuration: **hybrid+rerank @
-500 on cited, 0.69 (35/51)**; on descriptive, **plain vector @ 500, 0.41 (21/51)** is the
-best *reliable* setting (rerank's descriptive gain isn't significant).
+| mode | 250 | 500 | 1000 |
+|---|---|---|---|
+| vector | .24 | **.41** | .35 |
+| lexical | .10 | .16 | .20 |
+| hybrid | .16 | .27 | .25 |
+| hybrid+rerank | .29 | .33 | .27 |
+| vector+rerank | .33 | .35 | .27 |
 
-**Large-chunk bias, named:** `tok@5` is ~1,250 / 2,500 / 5,000 at 250/500/1000 — bigger
-chunks return ~4× the text for **no** recall gain (250-token rerank 0.65 ≈ 1000-token
-0.59 at a quarter of the tokens). recall@250 is capped at the containment **ceiling 0.96**
-(two gold spans straddle a 250-token boundary); 500/1000 ceilings are 1.00.
+`tok@5` ≈ 1,250 / 2,500 / 5,000 at 250/500/1000. Retrieval-step p50 (query-embed ~6 ms
+excluded): vector ≈ 3 ms; lexical & hybrid 45–170 ms; hybrid+rerank 183–265 ms;
+**vector+rerank 94–135 ms**.
 
-**Descriptive uniqueness floor (named, not hidden):** `scripts/check_uniqueness.py` found
-**6%** of descriptive candidates had a clear second home (another document fully answered
-— dropped); ~80% have a *topically related* passage elsewhere that does not answer, so
-single-gold scoring stays valid for those. In a corpus built for deliberate topic overlap,
-that residual is a known floor on measurable recall — some natural-language questions
-legitimately have more than one home and are counted as misses.
+**Significant differences (McNemar exact, paired hit@5, p<0.05):**
+- **vector+rerank is the cited winner and dominates hybrid+rerank:** significant over
+  plain vector at all sizes (p=.001/.000/.001); vs hybrid+rerank it is *equal in recall*
+  (p=.125/.50/1.0) at **~half the latency** — it reranks vector's clean list instead of
+  the lexical-damaged fused list. On cited 250 it reaches **.73 (37/51)**, the table's best.
+- **hybrid+rerank > hybrid:** significant on cited at all sizes; on descriptive only at 250.
+- **vector > lexical:** significant on descriptive 250/500 and cited 250. **hybrid never
+  significantly beats vector** (closest cited 500/1000, not significant).
+- **Chunk size follows query type (vector):** cited **250 > 500** (24 vs 16, p=.039) and
+  descriptive **500 > 250** (21 vs 12, p=.035) — two significant inversions in opposite
+  directions. Rerank modes are robust to chunk size (no size pair significant).
 
-**If the corpus doubled:** add IDF (a true BM25 lexical arm) before trusting the
-lexical/hybrid columns, and keep chunks at **250–500** tokens — 1000 pays 4× the tokens
-for nothing.
+**Weighted-RRF sweep (`scripts/rrf_sweep.py`), descriptive:** equal weighting is why
+fusion imports lexical's errors. Up-weighting vector recovers most of the loss but
+**never reaches plain vector within an 8:1 weight** (500: .27 at 1:1 → .39 at 8:1, vs
+vector .41; 250/1000 similar). Fusion only equals vector in the limit where lexical
+contributes nothing — so on descriptive the answer is not to down-weight lexical but to
+**drop it** (use vector or vector+rerank).
+
+**Why lexical is weak even on cited (the load-bearing caveat):** the feared citation-leak
+to lexical **did not materialise** — lexical is the *weakest* arm even on cited questions
+containing the exact rule number. `ts_rank_cd` has **no IDF**, so the rare identifier is
+one term among many and never dominates ranking. A real BM25 arm would likely flip the
+cited column; the comparison is only honest with that named.
+
+**Large-chunk bias, named:** bigger chunks return ~4× the text for no recall gain
+(cited vector+rerank .73 @250 ≈ .65 @500 ≈ .61 @1000 at 1×/2×/4× the tokens). recall@250
+is capped at the containment **ceiling 0.96** (two gold spans straddle a 250-token
+boundary); 500/1000 ceilings are 1.00.
+
+**Descriptive uniqueness floor:** `scripts/check_uniqueness.py` dropped **6%** with a
+clear second home; ~80% have a topically-related (non-answering) passage elsewhere, valid
+under single-gold scoring. In a corpus built for overlap, that residual is a known floor —
+some natural-language questions legitimately have more than one home, counted as misses.
+
+### Conclusions (each supported by the numbers above)
+
+- **Chunk size should follow query type: 250 for cited, 500 for descriptive.** The two
+  vector inversions are significant and opposite (cited 250>500 p=.039; descriptive
+  500>250 p=.035); 1000 never wins and costs 4× the tokens.
+- **The lexical arm costs 15–50× vector's latency and contributes negative recall on
+  descriptive.** Lexical p50 45–170 ms vs vector ~3 ms; fusing it *lowers* descriptive
+  recall (hybrid .27 < vector .41 @500) and no RRF weight recovers it.
+- **`ts_rank_cd` without IDF cannot exploit a rare identifier**, which is why citation
+  anchors did not favour lexical and why a true BM25 arm would likely flip the cited
+  column. Best configs: **vector+rerank @250 on cited (.73)** — equal to hybrid+rerank at
+  half the latency; **plain vector @500 on descriptive (.41)** — reranking and fusion
+  both fail to beat it.

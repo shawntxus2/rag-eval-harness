@@ -130,7 +130,7 @@ CREATE TABLE IF NOT EXISTS eval_runs (
     id                 BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     run_label          TEXT,
     retrieval_mode     TEXT NOT NULL
-                        CHECK (retrieval_mode IN ('vector','lexical','hybrid','hybrid_rerank')),
+                        CHECK (retrieval_mode IN ('vector','lexical','hybrid','hybrid_rerank','vector_rerank')),
     chunk_size         INTEGER NOT NULL,
     ingestion_run_id   BIGINT REFERENCES ingestion_runs(id) ON DELETE SET NULL,
     embedding_model    TEXT NOT NULL,
@@ -155,6 +155,8 @@ CREATE TABLE IF NOT EXISTS eval_runs (
 -- Backfill the dtype column onto any eval_runs table created before it existed
 -- (CREATE TABLE IF NOT EXISTS above is a no-op on an existing table).
 ALTER TABLE eval_runs ADD COLUMN IF NOT EXISTS dtype TEXT;
+ALTER TABLE eval_runs DROP CONSTRAINT IF EXISTS eval_runs_retrieval_mode_check;
+ALTER TABLE eval_runs ADD CONSTRAINT eval_runs_retrieval_mode_check CHECK (retrieval_mode IN ('vector','lexical','hybrid','hybrid_rerank','vector_rerank'));
 ALTER TABLE eval_runs ADD COLUMN IF NOT EXISTS question_type TEXT;
 ALTER TABLE eval_runs ADD COLUMN IF NOT EXISTS mean_tokens_at_5 DOUBLE PRECISION;
 

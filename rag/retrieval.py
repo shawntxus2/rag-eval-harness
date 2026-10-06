@@ -109,32 +109,39 @@ class Retriever:
         ).fetchall()
         return [Hit(r[0], float(r[1])) for r in rows]
 
-    def hybrid(self, conn, query: str, run_id: int, depth: int | None = None) -> list[Hit]:
+    def hybrid(self, conn, query: str, run_id: int, depth: int | None = None,
+               weights: list[float] | None = None) -> list[Hit]:
         depth = depth or settings.retrieval_depth
         vec = self.vector(conn, query, run_id, depth)
         lex = self.lexical(conn, query, run_id, depth)
-        fused = _rrf([vec, lex], settings.rrf_k)
-        return fused[:depth]
+        w = weights or [settings.rrf_weight_vector, settings.rrf_weight_lexical]
+        return _rrf([vec, lex], settings.rrf_k, w)[:depth]
 
-    def hybrid_rerank(self, conn, query: str, run_id: int, depth: int | None = None) -> list[Hit]:
-        depth = depth or settings.retrieval_depth
-        fused = self.hybrid(conn, query, run_id, depth)
-        cand = fused[: settings.top_k]
-        if not cand:
+    def _rerank(self, conn, query: str, cand: list[Hit]) -> list[Hit]:
+        """Cross-encoder rescoring of the top TOP_K candidates (shared by both rerank modes)."""
+        ids = [h.chunk_id for h in cand[: settings.top_k]]
+        if not ids:
             return []
-        ids = [h.chunk_id for h in cand]
         text_by_id = dict(
             conn.execute("SELECT id, text FROM chunks WHERE id = ANY(%s)", (ids,)).fetchall()
         )
         scores = self.reranker.predict([(query, text_by_id[i]) for i in ids])
-        ranked = sorted(zip(ids, scores), key=lambda t: -float(t[1]))
-        return [Hit(i, float(s)) for i, s in ranked]
+        return [Hit(i, float(s)) for i, s in sorted(zip(ids, scores), key=lambda t: -float(t[1]))]
+
+    def hybrid_rerank(self, conn, query: str, run_id: int, depth: int | None = None) -> list[Hit]:
+        return self._rerank(conn, query, self.hybrid(conn, query, run_id, depth or settings.retrieval_depth))
+
+    def vector_rerank(self, conn, query: str, run_id: int, depth: int | None = None) -> list[Hit]:
+        # Cross-encoder over VECTOR's top candidates — avoids handing the reranker the
+        # lexical arm's damaged list (which hurts on descriptive queries).
+        return self._rerank(conn, query, self.vector(conn, query, run_id, depth or settings.retrieval_depth))
 
 
-def _rrf(lists: list[list[Hit]], k: int) -> list[Hit]:
-    """Reciprocal Rank Fusion: score(d) = Σ 1/(k + rank_in_list(d))."""
+def _rrf(lists: list[list[Hit]], k: int, weights: list[float] | None = None) -> list[Hit]:
+    """Weighted Reciprocal Rank Fusion: score(d) = Σ w_i / (k + rank_i(d))."""
+    weights = weights or [1.0] * len(lists)
     agg: dict[int, float] = defaultdict(float)
-    for lst in lists:
+    for w, lst in zip(weights, lists):
         for rank, hit in enumerate(lst, start=1):
-            agg[hit.chunk_id] += 1.0 / (k + rank)
+            agg[hit.chunk_id] += w / (k + rank)
     return [Hit(cid, s) for cid, s in sorted(agg.items(), key=lambda t: -t[1])]

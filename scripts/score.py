@@ -28,9 +28,11 @@ from rag.config import settings
 from rag.db import connect
 from rag.retrieval import Retriever
 
-MODES = ["vector", "lexical", "hybrid", "hybrid_rerank"]
+MODES = ["vector", "lexical", "hybrid", "hybrid_rerank", "vector_rerank"]
 TYPES = ["cited", "descriptive"]
-PAIRS = [("lexical", "vector"), ("hybrid", "vector"), ("hybrid", "lexical"), ("hybrid_rerank", "hybrid")]
+PAIRS = [("lexical", "vector"), ("hybrid", "vector"), ("hybrid_rerank", "hybrid"),
+         ("vector_rerank", "vector"), ("vector_rerank", "hybrid_rerank")]
+SIZE_PAIRS = [(250, 500), (500, 1000), (250, 1000)]
 
 
 def pctl(xs, p):
@@ -116,6 +118,7 @@ def main() -> int:
 
         _print_table(table)
         _print_mcnemar(hit5)
+        _print_mcnemar_sizes(hit5)
         print(f"\nquery-embed latency (separate, ~constant): mean {st.mean(embed_ms_all):.2f} ms "
               f"(fp16, bge). Retrieval-step latency above EXCLUDES it.")
     return 0
@@ -133,8 +136,15 @@ def _print_table(table) -> None:
                   f"{mrr:>7.3f}{mt5:>8.0f}{p50:>8.2f}{p95:>8.2f}{ceil:>7.2f}")
 
 
+def _mcnemar(A, B):
+    bb = sum(1 for x, y in zip(A, B) if x == 1 and y == 0)
+    cc = sum(1 for x, y in zip(A, B) if x == 0 and y == 1)
+    p = binomtest(min(bb, cc), bb + cc, 0.5).pvalue if (bb + cc) else 1.0
+    return bb, cc, p
+
+
 def _print_mcnemar(hit5) -> None:
-    print("\nMcNEMAR (exact, paired hit@5). b=A-hit/B-miss, c=A-miss/B-hit; p two-sided; * = p<0.05")
+    print("\nMcNEMAR on MODE pairs (exact, paired hit@5). b=A-hit/B-miss, c=A-miss/B-hit; * = p<0.05")
     for t in TYPES:
         for size in sorted({k[1] for k in hit5 if k[0] == t}):
             print(f"\n  {t} / chunk {size}:")
@@ -142,12 +152,21 @@ def _print_mcnemar(hit5) -> None:
                 A, B = hit5.get((t, size, a)), hit5.get((t, size, b))
                 if not A or not B:
                     continue
-                bb = sum(1 for x, y in zip(A, B) if x == 1 and y == 0)
-                cc = sum(1 for x, y in zip(A, B) if x == 0 and y == 1)
-                p = binomtest(min(bb, cc), bb + cc, 0.5).pvalue if (bb + cc) else 1.0
-                da, db = sum(A), sum(B)
-                sig = "*" if p < 0.05 else " "
-                print(f"    {a:<13} vs {b:<13}  {da:>2} vs {db:<2} hits  b={bb} c={cc}  p={p:.3f} {sig}")
+                bb, cc, p = _mcnemar(A, B)
+                print(f"    {a:<13} vs {b:<13}  {sum(A):>2} vs {sum(B):<2} hits  b={bb} c={cc}  p={p:.3f} {'*' if p<0.05 else ' '}")
+
+
+def _print_mcnemar_sizes(hit5) -> None:
+    print("\nMcNEMAR on CHUNK-SIZE pairs within each mode (paired hit@5); * = p<0.05")
+    for t in TYPES:
+        for mode in MODES:
+            print(f"\n  {t} / {mode}:")
+            for s1, s2 in SIZE_PAIRS:
+                A, B = hit5.get((t, s1, mode)), hit5.get((t, s2, mode))
+                if not A or not B:
+                    continue
+                bb, cc, p = _mcnemar(A, B)
+                print(f"    {s1:>4} vs {s2:<4}  {sum(A):>2} vs {sum(B):<2} hits  b={bb} c={cc}  p={p:.3f} {'*' if p<0.05 else ' '}")
 
 
 if __name__ == "__main__":

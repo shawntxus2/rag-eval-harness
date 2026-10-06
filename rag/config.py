@@ -52,6 +52,10 @@ class Settings:
     chunk_overlap: int = _int("CHUNK_OVERLAP", 50)
 
     rrf_k: int = _int("RRF_K", 60)
+    # Weighted RRF: score = Σ w_i/(k+rank_i). Equal weights (1,1) by default; the vector
+    # weight is swept in scripts/rrf_sweep.py to show where fusion stops losing to vector.
+    rrf_weight_vector: float = float(os.getenv("RRF_WEIGHT_VECTOR", "1.0"))
+    rrf_weight_lexical: float = float(os.getenv("RRF_WEIGHT_LEXICAL", "1.0"))
     retrieval_depth: int = _int("RETRIEVAL_DEPTH", 100)  # candidates each arm returns before fusion
     top_k: int = _int("TOP_K", 50)                       # hybrid candidates handed to the reranker
     rerank_model: str = os.getenv("RERANK_MODEL", "BAAI/bge-reranker-base")
