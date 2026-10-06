@@ -3,6 +3,12 @@
     "filename": "bis_2012_pfmi_disclosure_framework.pdf",
     "title": "Principles for financial market infrastructures: disclosure framework and assessment methodology",
     "publisher": "CPMI-IOSCO (published by BIS)",
+    "publisher_display": "CPMI-IOSCO",
+    "publisher_tokens": [
+      "CPMI",
+      "IOSCO",
+      "CPSS"
+    ],
     "publication_date": "2012-12-14",
     "source_url": "https://www.bis.org/publications/principles-financial-market-infrastructures-disclosure-framework-and-assessment-methodology.pdf",
     "retrieval_date": "2026-10-05",
@@ -29,6 +35,12 @@
     "filename": "bis_2016_fmi_cyber_resilience.pdf",
     "title": "Guidance on cyber resilience for financial market infrastructures",
     "publisher": "CPMI-IOSCO (published by BIS)",
+    "publisher_display": "CPMI-IOSCO",
+    "publisher_tokens": [
+      "CPMI",
+      "IOSCO",
+      "CPSS"
+    ],
     "publication_date": "2016-06-29",
     "source_url": "https://www.bis.org/publications/guidance-cyber-resilience-financial-market-infrastructures.pdf",
     "retrieval_date": "2026-10-05",
@@ -55,6 +67,12 @@
     "filename": "bis_2017_ccp_resilience_guidance.pdf",
     "title": "Resilience of central counterparties (CCPs): Further guidance on the PFMI \u2014 Final report",
     "publisher": "CPMI-IOSCO (published by BIS)",
+    "publisher_display": "CPMI-IOSCO",
+    "publisher_tokens": [
+      "CPMI",
+      "IOSCO",
+      "CPSS"
+    ],
     "publication_date": "2017-07-05",
     "source_url": "https://www.bis.org/publications/resilience-central-counterparties-ccps-further-guidance-pfmi-final-report.pdf",
     "retrieval_date": "2026-10-05",
@@ -81,6 +99,12 @@
     "filename": "bis_2017_recovery_fmi_revised.pdf",
     "title": "Recovery of financial market infrastructures \u2014 Revised report",
     "publisher": "CPMI-IOSCO (published by BIS)",
+    "publisher_display": "CPMI-IOSCO",
+    "publisher_tokens": [
+      "CPMI",
+      "IOSCO",
+      "CPSS"
+    ],
     "publication_date": "2017-07-05",
     "source_url": "https://www.bis.org/publications/recovery-financial-market-infrastructures-revised-report.pdf",
     "retrieval_date": "2026-10-05",
@@ -107,6 +131,12 @@
     "filename": "bis_2022_review_margining_practices.pdf",
     "title": "Review of margining practices",
     "publisher": "BCBS-CPMI-IOSCO (published by BIS)",
+    "publisher_display": "BCBS, CPMI and IOSCO",
+    "publisher_tokens": [
+      "BCBS",
+      "CPMI",
+      "IOSCO"
+    ],
     "publication_date": "2022-09-29",
     "source_url": "https://www.bis.org/publications/review-margining-practices.pdf",
     "retrieval_date": "2026-10-05",
@@ -133,6 +163,10 @@
     "filename": "cftc_2012_cleared_swaps_customer_protection.pdf",
     "title": "Protection of Cleared Swaps Customer Contracts and Collateral; Conforming Amendments to the Commodity Broker Bankruptcy Provisions",
     "publisher": "CFTC / Federal Register",
+    "publisher_display": "the CFTC",
+    "publisher_tokens": [
+      "CFTC"
+    ],
     "publication_date": "2012-02-07",
     "source_url": "https://www.govinfo.gov/content/pkg/FR-2012-02-07/pdf/2012-1033.pdf",
     "retrieval_date": "2026-10-05",
@@ -159,6 +193,10 @@
     "filename": "cftc_2013_sidco_enhanced_risk_management.pdf",
     "title": "Enhanced Risk Management Standards for Systemically Important Derivatives Clearing Organizations",
     "publisher": "CFTC / Federal Register",
+    "publisher_display": "the CFTC",
+    "publisher_tokens": [
+      "CFTC"
+    ],
     "publication_date": "2013-12-02",
     "source_url": "https://www.govinfo.gov/content/pkg/FR-2013-12-02/pdf/2013-27849.pdf",
     "retrieval_date": "2026-10-05",
@@ -185,6 +223,10 @@
     "filename": "cftc_2020_dco_general_provisions.pdf",
     "title": "Derivatives Clearing Organization General Provisions and Core Principles (85 FR 4800)",
     "publisher": "CFTC / Federal Register",
+    "publisher_display": "the CFTC",
+    "publisher_tokens": [
+      "CFTC"
+    ],
     "publication_date": "2020-01-27",
     "source_url": "https://www.govinfo.gov/content/pkg/FR-2020-01-27/pdf/2020-01065.pdf",
     "retrieval_date": "2026-10-05",
@@ -211,6 +253,10 @@
     "filename": "dtcc_2023_dtc_disclosure_framework.pdf",
     "title": "The Depository Trust Company \u2014 Disclosure Framework for Covered Clearing Agencies and FMIs",
     "publisher": "DTC (DTCC)",
+    "publisher_display": "DTC (The Depository Trust Company)",
+    "publisher_tokens": [
+      "DTC"
+    ],
     "publication_date": "2023-03-01",
     "source_url": "https://www.dtcc.com/-/media/Files/Downloads/legal/policy-and-compliance/DTC_Disclosure_Framework.pdf",
     "retrieval_date": "2026-10-05",
@@ -240,6 +286,10 @@
     "filename": "dtcc_2024_nscc_disclosure_framework.pdf",
     "title": "National Securities Clearing Corporation \u2014 Disclosure Framework for Covered Clearing Agencies and FMIs",
     "publisher": "NSCC (DTCC)",
+    "publisher_display": "NSCC",
+    "publisher_tokens": [
+      "NSCC"
+    ],
     "publication_date": "2024-12-01",
     "source_url": "https://www.dtcc.com/-/media/Files/Downloads/legal/policy-and-compliance/NSCC-DISCLOSURE-FRAMEWORK-2024-Q3-Q4.pdf",
     "retrieval_date": "2026-10-05",
@@ -269,6 +319,10 @@
     "filename": "dtcc_2025_ficc_disclosure_framework.pdf",
     "title": "Fixed Income Clearing Corporation (GSD and MBSD) \u2014 Disclosure Framework for Covered Clearing Agencies and FMIs",
     "publisher": "FICC (DTCC)",
+    "publisher_display": "FICC",
+    "publisher_tokens": [
+      "FICC"
+    ],
     "publication_date": "2025-06-01",
     "source_url": "https://www.dtcc.com/-/media/Files/Downloads/legal/policy-and-compliance/FICC-Disclosure-Framework-2025-Q2.pdf",
     "retrieval_date": "2026-10-05",
@@ -298,6 +352,11 @@
     "filename": "fed_2023_payment_system_risk_policy.pdf",
     "title": "Federal Reserve Policy on Payment System Risk (as amended effective July 20, 2023)",
     "publisher": "Federal Reserve",
+    "publisher_display": "the Federal Reserve",
+    "publisher_tokens": [
+      "Federal Reserve",
+      "Fed"
+    ],
     "publication_date": "2023-07-20",
     "source_url": "https://www.federalreserve.gov/paymentsystems/files/psr_policy.pdf",
     "retrieval_date": "2026-10-05",
@@ -324,6 +383,11 @@
     "filename": "fed_2024_regulation_hh_fmu.pdf",
     "title": "Financial Market Utilities \u2014 Regulation HH Operational Risk-Management (89 FR 18749)",
     "publisher": "Federal Reserve",
+    "publisher_display": "the Federal Reserve",
+    "publisher_tokens": [
+      "Federal Reserve",
+      "Fed"
+    ],
     "publication_date": "2024-03-15",
     "source_url": "https://www.govinfo.gov/content/pkg/FR-2024-03-15/pdf/2024-05322.pdf",
     "retrieval_date": "2026-10-05",
@@ -350,6 +414,10 @@
     "filename": "finra_2021_4210_margin_order.pdf",
     "title": "SR-FINRA-2021-010 (SEC Release 34-91937): Proposed Rule Change to Amend Covered Agency Transaction Requirements under FINRA Rule 4210 (Margin Requirements)",
     "publisher": "FINRA (via SEC)",
+    "publisher_display": "FINRA",
+    "publisher_tokens": [
+      "FINRA"
+    ],
     "publication_date": "2021-05-19",
     "source_url": "https://www.sec.gov/files/rules/sro/finra/2021/34-91937.pdf",
     "retrieval_date": "2026-10-05",
@@ -376,6 +444,10 @@
     "filename": "finra_2023_cat_clock_sync_rule_filing.pdf",
     "title": "SR-FINRA-2023-003: Proposed Rule Change to Amend FINRA Rule 4590 (Synchronization of Member Business Clocks) re Consolidated Audit Trail (CAT)",
     "publisher": "FINRA",
+    "publisher_display": "FINRA",
+    "publisher_tokens": [
+      "FINRA"
+    ],
     "publication_date": "2023-03-01",
     "source_url": "https://www.finra.org/sites/default/files/2023-03/SR-FINRA-2023-003.pdf",
     "retrieval_date": "2026-10-05",
@@ -402,6 +474,10 @@
     "filename": "finra_2023_sr_2021_010_order.pdf",
     "title": "SR-FINRA-2021-010 (SEC Release 34-98003): Order Granting Approval of Rule Change to Amend FINRA Rule 4210 (Margin Requirements)",
     "publisher": "FINRA (via SEC)",
+    "publisher_display": "FINRA",
+    "publisher_tokens": [
+      "FINRA"
+    ],
     "publication_date": "2023-07-27",
     "source_url": "https://www.sec.gov/files/rules/sro/finra/2023/34-98003.pdf",
     "retrieval_date": "2026-10-05",
@@ -428,6 +504,10 @@
     "filename": "occ_2002_asset_mgmt_ops_controls.pdf",
     "title": "Asset Management Operations and Controls \u2014 Comptroller's Handbook (AM-2)",
     "publisher": "OCC",
+    "publisher_display": "the OCC",
+    "publisher_tokens": [
+      "OCC"
+    ],
     "publication_date": "2002-01-01",
     "source_url": "https://www.occ.gov/publications-and-resources/publications/comptrollers-handbook/files/asset-mgmt-ops-controls/pub-ch-asset-mgmt-ops-controls.pdf",
     "retrieval_date": "2026-10-05",
@@ -454,6 +534,10 @@
     "filename": "occ_2002_custody_services.pdf",
     "title": "Custody Services \u2014 Comptroller's Handbook (Asset Management series)",
     "publisher": "OCC",
+    "publisher_display": "the OCC",
+    "publisher_tokens": [
+      "OCC"
+    ],
     "publication_date": "2002-01-01",
     "source_url": "https://www.occ.gov/publications-and-resources/publications/comptrollers-handbook/files/custody-services/pub-ch-custody-services.pdf",
     "retrieval_date": "2026-10-05",
@@ -480,6 +564,10 @@
     "filename": "occ_2019_corporate_risk_governance.pdf",
     "title": "Corporate and Risk Governance \u2014 Comptroller's Handbook (Safety and Soundness), Version 2.0",
     "publisher": "OCC",
+    "publisher_display": "the OCC",
+    "publisher_tokens": [
+      "OCC"
+    ],
     "publication_date": "2019-07-01",
     "source_url": "https://www.occ.gov/publications-and-resources/publications/comptrollers-handbook/files/corporate-risk-governance/pub-ch-corporate-risk.pdf",
     "retrieval_date": "2026-10-05",
@@ -506,6 +594,10 @@
     "filename": "occ_2021_payment_systems.pdf",
     "title": "Payment Systems and Funds Transfer Activities \u2014 Comptroller's Handbook, Version 1.0",
     "publisher": "OCC",
+    "publisher_display": "the OCC",
+    "publisher_tokens": [
+      "OCC"
+    ],
     "publication_date": "2021-10-01",
     "source_url": "https://www.occ.gov/publications-and-resources/publications/comptrollers-handbook/files/payment-sys-funds-transfer-activities/pub-ch-payment-systems.pdf",
     "retrieval_date": "2026-10-05",
@@ -532,6 +624,10 @@
     "filename": "sec_2013_financial_responsibility_rules.pdf",
     "title": "Financial Responsibility Rules for Broker-Dealers (net capital / customer protection amendments)",
     "publisher": "SEC / Federal Register",
+    "publisher_display": "the SEC",
+    "publisher_tokens": [
+      "SEC"
+    ],
     "publication_date": "2013-08-21",
     "source_url": "https://www.govinfo.gov/content/pkg/FR-2013-08-21/pdf/2013-18734.pdf",
     "retrieval_date": "2026-10-05",
@@ -558,6 +654,10 @@
     "filename": "sec_2014_regulation_sci.pdf",
     "title": "Regulation Systems Compliance and Integrity (Regulation SCI)",
     "publisher": "SEC / Federal Register",
+    "publisher_display": "the SEC",
+    "publisher_tokens": [
+      "SEC"
+    ],
     "publication_date": "2014-12-05",
     "source_url": "https://www.govinfo.gov/content/pkg/FR-2014-12-05/pdf/2014-27767.pdf",
     "retrieval_date": "2026-10-05",
@@ -584,6 +684,10 @@
     "filename": "sec_2016_covered_clearing_agencies.pdf",
     "title": "Standards for Covered Clearing Agencies",
     "publisher": "SEC / Federal Register",
+    "publisher_display": "the SEC",
+    "publisher_tokens": [
+      "SEC"
+    ],
     "publication_date": "2016-10-13",
     "source_url": "https://www.govinfo.gov/content/pkg/FR-2016-10-13/pdf/2016-23891.pdf",
     "retrieval_date": "2026-10-05",
@@ -610,6 +714,10 @@
     "filename": "sec_2023_clearing_agency_governance.pdf",
     "title": "Clearing Agency Governance and Conflicts of Interest",
     "publisher": "SEC / Federal Register",
+    "publisher_display": "the SEC",
+    "publisher_tokens": [
+      "SEC"
+    ],
     "publication_date": "2023-12-05",
     "source_url": "https://www.govinfo.gov/content/pkg/FR-2023-12-05/pdf/2023-25807.pdf",
     "retrieval_date": "2026-10-05",
@@ -636,6 +744,10 @@
     "filename": "sec_2023_short_sale_reporting.pdf",
     "title": "Short Position and Short Activity Reporting by Institutional Investment Managers (Rule 13f-2 / Form SHO)",
     "publisher": "SEC / Federal Register",
+    "publisher_display": "the SEC",
+    "publisher_tokens": [
+      "SEC"
+    ],
     "publication_date": "2023-11-01",
     "source_url": "https://www.govinfo.gov/content/pkg/FR-2023-11-01/pdf/2023-23050.pdf",
     "retrieval_date": "2026-10-05",
@@ -662,6 +774,10 @@
     "filename": "sec_2023_t1_settlement_cycle.pdf",
     "title": "Shortening the Securities Transaction Settlement Cycle",
     "publisher": "SEC / Federal Register",
+    "publisher_display": "the SEC",
+    "publisher_tokens": [
+      "SEC"
+    ],
     "publication_date": "2023-03-06",
     "source_url": "https://www.govinfo.gov/content/pkg/FR-2023-03-06/pdf/2023-03566.pdf",
     "retrieval_date": "2026-10-05",
@@ -688,6 +804,10 @@
     "filename": "sec_2024_treasury_central_clearing.pdf",
     "title": "Standards for Covered Clearing Agencies for U.S. Treasury Securities; Application of the Broker-Dealer Customer Protection Rule",
     "publisher": "SEC / Federal Register",
+    "publisher_display": "the SEC",
+    "publisher_tokens": [
+      "SEC"
+    ],
     "publication_date": "2024-01-16",
     "source_url": "https://www.govinfo.gov/content/pkg/FR-2024-01-16/pdf/2023-27860.pdf",
     "retrieval_date": "2026-10-05",

@@ -347,6 +347,18 @@ Getting it right:
 - **Stratify:** cap questions per document so the six SEC rules that hold **50.4%** of
   chunks (recomputed: 8,850 / 17,567; Reg SCI alone 13.9%) do not hold half the questions.
 
+### The one component that needs per-corpus configuration
+
+Everything in this build runs on any corpus unchanged **except descriptive question
+generation**, which must name the issuing institution (to avoid deixis like "this
+guidance"). That configuration lives in the **manifest, not in code**: each document in
+`corpus/manifest.json` carries `publisher_display` (the name to put in a question, e.g.
+"the CFTC", "CPMI-IOSCO", "NSCC") and `publisher_tokens` (what must appear for
+validation). `scripts/gen_questions.py` reads these per document — there is no hardcoded
+publisher list and no generic fallback. A document missing `publisher_display` is
+**skipped loudly and reported by name**, never given a deictic question; hand-edit the
+manifest to add it. (Cited generation and all retrieval/scoring need no per-corpus setup.)
+
 ## Status
 
 - [x] **Phase 0** — infrastructure, schema, pinned deps

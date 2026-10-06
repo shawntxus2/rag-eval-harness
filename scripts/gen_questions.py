@@ -58,20 +58,24 @@ DEIXIS = re.compile(
 NONLATIN = re.compile(r"[Ͱ-ϿЀ-ӿ一-鿿]")
 
 
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+_MANIFEST = None
+
+
 def institution(fn: str):
-    """Return (name to put in the question, [tokens that must appear])."""
-    if fn.startswith("sec_"):   return "the SEC", ["SEC"]
-    if fn.startswith("cftc_"):  return "the CFTC", ["CFTC"]
-    if fn.startswith("fed_"):   return "the Federal Reserve", ["Federal Reserve", "Fed"]
-    if fn.startswith("occ_"):   return "the OCC", ["OCC"]
-    if fn.startswith("finra_"): return "FINRA", ["FINRA"]
-    if "nscc" in fn:            return "NSCC", ["NSCC"]
-    if "ficc" in fn:            return "FICC", ["FICC"]
-    if "_dtc_" in fn:           return "DTC (The Depository Trust Company)", ["DTC"]
-    if fn.startswith("bis_2012"): return "CPSS-IOSCO", ["CPSS", "IOSCO"]
-    if fn.startswith("bis_2022"): return "BCBS, CPMI and IOSCO", ["BCBS", "CPMI", "IOSCO"]
-    if fn.startswith("bis_"):   return "CPMI-IOSCO", ["CPMI", "IOSCO"]
-    return "the issuing authority", []
+    """(publisher_display, publisher_tokens) for a document, read from the MANIFEST.
+
+    Per-corpus configuration lives in corpus/manifest.json — there is no hardcoded
+    publisher list and no generic fallback. A document missing publisher_display is
+    skipped loudly by the caller rather than yielding a deictic "the issuing authority"
+    question. This is the one component that needs per-corpus setup; the config is data,
+    not code, so the generator travels to any corpus unchanged.
+    """
+    global _MANIFEST
+    if _MANIFEST is None:
+        _MANIFEST = {r["filename"]: r for r in json.loads((ROOT / "corpus" / "manifest.json").read_text())}
+    rec = _MANIFEST.get(fn, {})
+    return rec.get("publisher_display"), (rec.get("publisher_tokens") or [])
 
 SYSTEM_CITED = (
     "You write evaluation questions for a retrieval system over US financial-market "
@@ -170,7 +174,12 @@ def main() -> int:
         docs = conn.execute("SELECT id, filename FROM documents ORDER BY filename").fetchall()
         conn.execute("DELETE FROM eval_questions WHERE generated_by='openai' AND status='candidate' AND question_type=%s", (MODE,))
         made = failed = 0
+        skipped: list[str] = []
         for doc_id, filename in docs:
+            inst_name, inst_tokens = institution(filename)
+            if MODE == "descriptive" and not inst_name:
+                skipped.append(filename)  # loud skip, no deictic fallback
+                continue
             cleaned = cache.setdefault(filename, (root/"corpus"/"cleaned"/(filename[:-4]+".txt")).read_text())
             chunks = conn.execute(
                 "SELECT id,char_start,char_end,page_number,text FROM chunks WHERE ingestion_run_id=%s "
@@ -180,7 +189,6 @@ def main() -> int:
             if not pool:
                 continue
             order = pool[:: max(1, len(pool)//MAX_TRIES)][:MAX_TRIES]
-            inst_name, inst_tokens = institution(filename)
             extra = (f"The issuing institution is {inst_name} — name it in the question.\n"
                      if MODE == "descriptive" else "")
             accepted = 0
@@ -217,6 +225,12 @@ def main() -> int:
             print(f"  {filename}: {accepted}", end="\r", flush=True)
         print(" " * 60, end="\r")
         print(f"[{MODE}] generated {made} candidates ({failed} failed) with {model}\n")
+        if skipped:
+            print(f"[{MODE}] SKIPPED {len(skipped)} document(s) with no publisher_display in "
+                  "corpus/manifest.json (add it there — there is no code fallback):")
+            for fn in skipped:
+                print(f"    - {fn}")
+            print()
         _report(conn)
     return 0
 
