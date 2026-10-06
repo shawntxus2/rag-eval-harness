@@ -359,6 +359,24 @@ publisher list and no generic fallback. A document missing `publisher_display` i
 **skipped loudly and reported by name**, never given a deictic question; hand-edit the
 manifest to add it. (Cited generation and all retrieval/scoring need no per-corpus setup.)
 
+## Phase 5 — generation (answer with citations)
+
+`scripts/answer.py` ties retrieval to the generation seam: it retrieves the top-k chunks
+(**vector+rerank** by default — the precision mode from Phase 4), passes their text to
+`rag/generation.generate()` (OpenAI `gpt-5.6-terra`, Phase 0 seam), and prints the answer
+with its `[n]` citations resolved to **document + page**, plus token counts. The system
+prompt requires the model to cite the passages it used and to say so when the context
+does not contain the answer — so every claim is grounded in a retrieved chunk, and a
+missing/rejected key fails loudly (no stub). Generation is the **only** step that calls an
+API; retrieval and evaluation never do. Example:
+
+```
+python scripts/answer.py "What valuation discount does a CCP apply to collateral, and how
+should its board limit procyclical swings in those discounts and margins?"
+# → "A CCP applies a collateral haircut … the board should … limit destabilising
+#    procyclical changes … reviewed at least annually. [1][3]"  + a Sources list.
+```
+
 ## Status
 
 - [x] **Phase 0** — infrastructure, schema, pinned deps
@@ -366,7 +384,7 @@ manifest to add it. (Cited generation and all retrieval/scoring need no per-corp
 - [x] **Phase 2** — embedding & storage (bge + MiniLM, fp16, normalized & verified)
 - [x] **Phase 3** — four retrieval modes (same signature; symmetry asserted; self-retrieval 20/20)
 - [x] **Phase 4** — evaluation: split cited/descriptive, span-containment, McNemar significance
-- [ ] Phase 5 — generation
+- [x] **Phase 5** — generation: retrieve → answer with grounded `[n]` citations (OpenAI)
 - [ ] Phase 6 — Streamlit UI
 - [ ] Domain-drift finding (written up here)
 
