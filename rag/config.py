@@ -56,9 +56,11 @@ class Settings:
     top_k: int = _int("TOP_K", 50)                       # hybrid candidates handed to the reranker
     rerank_model: str = os.getenv("RERANK_MODEL", "BAAI/bge-reranker-base")
 
-    # Strict single-gold-chunk: a retrieval is correct iff the gold chunk itself is
-    # in the top-k (recorded decision; requires document-unique questions in Phase 4).
-    correctness_rule: str = os.getenv("CORRECTNESS_RULE", "exact_chunk")
+    # Gold is a CHARACTER SPAN (source_document_id + gold_char_start/end in cleaned
+    # text). A retrieval is correct iff a retrieved chunk FULLY CONTAINS that span
+    # (chunk.char_start <= gold_start and chunk.char_end >= gold_end) — not partial
+    # overlap. Span-based gold is what makes cross-chunk-size comparison valid.
+    correctness_rule: str = os.getenv("CORRECTNESS_RULE", "span_contains")
 
     # --- Generation (Phase 5) ---
     # Provider is a seam: 'openai' is wired today, 'anthropic' is reserved.

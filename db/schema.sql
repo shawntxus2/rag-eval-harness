@@ -90,20 +90,28 @@ CREATE TABLE IF NOT EXISTS eval_questions (
     gold_page           INTEGER,
     gold_char_start     INTEGER,                   -- span in the document's cleaned text
     gold_char_end       INTEGER,
-    answer_chunk_id     BIGINT  REFERENCES chunks(id) ON DELETE SET NULL,
+    answer_chunk_id     BIGINT  REFERENCES chunks(id) ON DELETE SET NULL,  -- provenance: the chunk/run the question was authored against (NOT the scoring key)
     generated_from_run  BIGINT  REFERENCES ingestion_runs(id) ON DELETE SET NULL,
-    generated_by        TEXT    NOT NULL DEFAULT 'claude'
-                         CHECK (generated_by IN ('claude','human')),
+    generated_by        TEXT    NOT NULL DEFAULT 'openai'
+                         CHECK (generated_by IN ('openai','claude','human')),
+    generator_model     TEXT,                      -- e.g. gpt-5.6-terra
     machine_generated   BOOLEAN NOT NULL DEFAULT TRUE,
     human_verified      BOOLEAN NOT NULL DEFAULT FALSE,
     status              TEXT    NOT NULL DEFAULT 'candidate'
                          CHECK (status IN ('candidate','approved','rejected')),
     verified_at         TIMESTAMPTZ,
-    uniqueness_anchor   TEXT,                      -- the detail that makes the question answerable from exactly one document (section/rule no., date, threshold, named entity, defined term) — required by strict single-gold-chunk correctness
+    uniqueness_anchor   TEXT,                      -- the detail that makes the question answerable from exactly one document (section/rule no., date, threshold, named entity, defined term)
+    gold_overlap        DOUBLE PRECISION,          -- content-word overlap of question vs gold span (paraphrase check; high => quoting)
     notes               TEXT,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+-- Scoring reads the gold CHARACTER SPAN (source_document_id + gold_char_start/end in
+-- cleaned text), not answer_chunk_id, so one question scores across all chunk sizes.
 ALTER TABLE eval_questions ADD COLUMN IF NOT EXISTS uniqueness_anchor TEXT;
+ALTER TABLE eval_questions ADD COLUMN IF NOT EXISTS gold_overlap DOUBLE PRECISION;
+ALTER TABLE eval_questions ADD COLUMN IF NOT EXISTS generator_model TEXT;
+ALTER TABLE eval_questions DROP CONSTRAINT IF EXISTS eval_questions_generated_by_check;
+ALTER TABLE eval_questions ADD CONSTRAINT eval_questions_generated_by_check CHECK (generated_by IN ('openai','claude','human'));
 
 CREATE INDEX IF NOT EXISTS eval_questions_verified_idx ON eval_questions (human_verified, status);
 
@@ -122,7 +130,7 @@ CREATE TABLE IF NOT EXISTS eval_runs (
     rerank_model       TEXT,                        -- null unless mode='hybrid_rerank'
     rrf_k              INTEGER,                      -- null unless a fusion mode
     top_k              INTEGER NOT NULL,            -- candidate depth used for the run
-    correctness_rule   TEXT NOT NULL,               -- 'exact_chunk' | 'span_overlap' | 'same_page'
+    correctness_rule   TEXT NOT NULL,               -- 'span_contains' (chosen: chunk fully contains the gold span) | 'span_overlap' | 'exact_chunk' | 'same_page'
     dtype              TEXT,                         -- inference precision that produced the latency ('fp16'|'bf16'|'fp32')
     num_questions      INTEGER NOT NULL,
     recall_at_5        DOUBLE PRECISION,
