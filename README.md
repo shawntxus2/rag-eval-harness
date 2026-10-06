@@ -350,12 +350,57 @@ Getting it right:
 - [x] **Phase 1** — ingest & chunking (extraction constant, furniture stripped, 3 chunk sizes)
 - [x] **Phase 2** — embedding & storage (bge + MiniLM, fp16, normalized & verified)
 - [x] **Phase 3** — four retrieval modes (same signature; symmetry asserted; self-retrieval 20/20)
-- [ ] Phase 4 — evaluation (the deliverable)
+- [x] **Phase 4** — evaluation: split cited/descriptive, span-containment, McNemar significance
 - [ ] Phase 5 — generation
 - [ ] Phase 6 — Streamlit UI
 - [ ] Domain-drift finding (written up here)
 
 ## Results
 
-_Populated in Phase 4 — which configuration won, by what margin, and what I'd change
-if the corpus doubled._
+Scored on **bge-base, fp16**, over **51 cited + 51 descriptive** questions, split by
+type and **never pooled** (`scripts/score.py` → `eval_runs`/`eval_results`). Retrieval
+is corpus-wide; a hit is a top-k chunk **from the gold document that fully contains the
+gold span**. recall@5 shown as rate (hits/51); `tok@5` = mean tokens across the top-5
+(the large-chunk bias, named); latency is the retrieval step, query-embed (~6 ms)
+excluded.
+
+| | 250 v / lex / hyb / rr | 500 v / lex / hyb / rr | 1000 v / lex / hyb / rr |
+|---|---|---|---|
+| **cited** recall@5 | .47 / .24 / .41 / **.65** | .31 / .27 / .41 / **.69** | .31 / .25 / .39 / **.59** |
+| **descriptive** recall@5 | .24 / .10 / .16 / **.29** | **.41** / .16 / .27 / .33 | .35 / .20 / .25 / .27 |
+| tok@5 (both) | ~1,250 | ~2,500 | ~5,000 |
+| retrieval p50 (ms) | v≈3 lex≈110 hyb≈120 rr≈210 | v≈3 lex≈75 hyb≈76 rr≈207 | v≈3 lex≈46 hyb≈47 rr≈183 |
+
+**Which differences are real (McNemar exact, paired hit@5, p<0.05):**
+- **hybrid+rerank > hybrid:** significant on cited at all three sizes (p≈.000/.000/.031);
+  on descriptive only at 250 (p=.039), not at 500/1000. Reranking helps most when the
+  query shares tokens with the passage; it stops paying off on pure-paraphrase queries.
+- **vector > lexical:** significant on descriptive 250 & 500 (p=.016/.007) and cited 250
+  (p=.004) — semantics earns its place when the user doesn't know the citation.
+- **hybrid > lexical:** significant on cited at all sizes; **hybrid vs vector: never
+  significant** — RRF of a strong vector arm and a weak lexical arm tracks vector.
+
+**The finding (and why the lexical caveat is load-bearing):** the feared citation-leak
+to lexical **did not materialise** — lexical is the *weakest* arm even on cited
+questions that contain the exact rule number. `ts_rank_cd` has **no IDF**, so the rare
+identifier that "should" hand retrieval to lexical is just one term among many and never
+dominates the ranking. A real BM25 arm would very likely reverse the cited column; the
+comparison is only honest with that named. Best single configuration: **hybrid+rerank @
+500 on cited, 0.69 (35/51)**; on descriptive, **plain vector @ 500, 0.41 (21/51)** is the
+best *reliable* setting (rerank's descriptive gain isn't significant).
+
+**Large-chunk bias, named:** `tok@5` is ~1,250 / 2,500 / 5,000 at 250/500/1000 — bigger
+chunks return ~4× the text for **no** recall gain (250-token rerank 0.65 ≈ 1000-token
+0.59 at a quarter of the tokens). recall@250 is capped at the containment **ceiling 0.96**
+(two gold spans straddle a 250-token boundary); 500/1000 ceilings are 1.00.
+
+**Descriptive uniqueness floor (named, not hidden):** `scripts/check_uniqueness.py` found
+**6%** of descriptive candidates had a clear second home (another document fully answered
+— dropped); ~80% have a *topically related* passage elsewhere that does not answer, so
+single-gold scoring stays valid for those. In a corpus built for deliberate topic overlap,
+that residual is a known floor on measurable recall — some natural-language questions
+legitimately have more than one home and are counted as misses.
+
+**If the corpus doubled:** add IDF (a true BM25 lexical arm) before trusting the
+lexical/hybrid columns, and keep chunks at **250–500** tokens — 1000 pays 4× the tokens
+for nothing.

@@ -139,6 +139,8 @@ CREATE TABLE IF NOT EXISTS eval_runs (
     top_k              INTEGER NOT NULL,            -- candidate depth used for the run
     correctness_rule   TEXT NOT NULL,               -- 'span_contains' (chosen: chunk fully contains the gold span) | 'span_overlap' | 'exact_chunk' | 'same_page'
     dtype              TEXT,                         -- inference precision that produced the latency ('fp16'|'bf16'|'fp32')
+    question_type      TEXT,                         -- 'cited' | 'descriptive' — runs are split by type, never pooled
+    mean_tokens_at_5   DOUBLE PRECISION,             -- mean total tokens across the top-5 chunks (names the large-chunk bias)
     num_questions      INTEGER NOT NULL,
     recall_at_5        DOUBLE PRECISION,
     recall_at_10       DOUBLE PRECISION,
@@ -153,6 +155,8 @@ CREATE TABLE IF NOT EXISTS eval_runs (
 -- Backfill the dtype column onto any eval_runs table created before it existed
 -- (CREATE TABLE IF NOT EXISTS above is a no-op on an existing table).
 ALTER TABLE eval_runs ADD COLUMN IF NOT EXISTS dtype TEXT;
+ALTER TABLE eval_runs ADD COLUMN IF NOT EXISTS question_type TEXT;
+ALTER TABLE eval_runs ADD COLUMN IF NOT EXISTS mean_tokens_at_5 DOUBLE PRECISION;
 
 -- Per-question detail behind each eval_run, for drill-down and debugging.
 CREATE TABLE IF NOT EXISTS eval_results (

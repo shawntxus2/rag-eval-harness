@@ -50,6 +50,28 @@ CODE = re.compile(
     r"\b(?:Rule|Principle|Section|Part|Release|Paragraph|Article|Schedule|Regulation)\s+\S*\d|"
     r"\bNo\.\s*\d|\d{2,}|[\"“”]"
 )
+# Deictic references that presuppose the document retrieval is meant to find.
+DEIXIS = re.compile(
+    r"\bthis (guidance|report|rule|document|framework|policy|release|standard|handbook|booklet)\b|"
+    r"\bthe (guidance|report|agency|commission|authority|document|framework)\b", re.I)
+# Non-Latin scripts (model glitches) — €, smart quotes, em-dash are fine (outside these ranges).
+NONLATIN = re.compile(r"[Ͱ-ϿЀ-ӿ一-鿿]")
+
+
+def institution(fn: str):
+    """Return (name to put in the question, [tokens that must appear])."""
+    if fn.startswith("sec_"):   return "the SEC", ["SEC"]
+    if fn.startswith("cftc_"):  return "the CFTC", ["CFTC"]
+    if fn.startswith("fed_"):   return "the Federal Reserve", ["Federal Reserve", "Fed"]
+    if fn.startswith("occ_"):   return "the OCC", ["OCC"]
+    if fn.startswith("finra_"): return "FINRA", ["FINRA"]
+    if "nscc" in fn:            return "NSCC", ["NSCC"]
+    if "ficc" in fn:            return "FICC", ["FICC"]
+    if "_dtc_" in fn:           return "DTC (The Depository Trust Company)", ["DTC"]
+    if fn.startswith("bis_2012"): return "CPSS-IOSCO", ["CPSS", "IOSCO"]
+    if fn.startswith("bis_2022"): return "BCBS, CPMI and IOSCO", ["BCBS", "CPMI", "IOSCO"]
+    if fn.startswith("bis_"):   return "CPMI-IOSCO", ["CPMI", "IOSCO"]
+    return "the issuing authority", []
 
 SYSTEM_CITED = (
     "You write evaluation questions for a retrieval system over US financial-market "
@@ -81,8 +103,11 @@ SYSTEM_DESC = (
     "named organisation, a threshold DESCRIBED (not quoted), or a distinctive combination of "
     "facts specific to how THIS document treats the topic. Avoid concepts so generic another "
     "publisher's document would answer equally.\n"
-    "4. Natural phrasing a person would actually type. Do NOT state or hint at the answer.\n"
-    "5. Answerable from a short, contiguous span of the passage.\n"
+    "4. NAME the issuing institution explicitly (you will be told which one). NEVER use deictic "
+    "references such as 'this guidance', 'the report', 'the Commission', 'the agency', or 'the "
+    "joint group' — the question must stand alone for a reader who has not seen the document.\n"
+    "5. Natural phrasing a person would actually type. Do NOT state or hint at the answer.\n"
+    "6. Answerable from a short, contiguous span of the passage. Write in English only.\n"
     "Return ONLY JSON: {\"question\": str, \"uniqueness_anchor\": str, "
     "\"supporting_quote\": str} — uniqueness_anchor names the semantic basis; "
     "supporting_quote copied VERBATIM from the passage."
@@ -109,20 +134,24 @@ def locate(quote, chunk_text):
     return (m.start(), m.end()) if m else None
 
 
-def descriptive_ok(question, gold):
-    if CODE.search(question):
+def descriptive_ok(question, anchor, gold, inst_tokens):
+    if CODE.search(question) or DEIXIS.search(question):
         return False
+    if NONLATIN.search(question) or NONLATIN.search(anchor or ""):
+        return False
+    if inst_tokens and not any(tok.lower() in question.lower() for tok in inst_tokens):
+        return False  # must name the institution
     qt = re.findall(r"\w+", question.lower())
     g = gold.lower()
     return not any(" ".join(qt[i:i + 4]) in g for i in range(len(qt) - 3))
 
 
-def call_llm(client, model, title, passage):
+def call_llm(client, model, title, passage, extra=""):
     try:
         resp = client.chat.completions.create(
             model=model,
             messages=[{"role": "system", "content": SYSTEM},
-                      {"role": "user", "content": f"Document title: {title}\n\nPassage:\n{passage}"}],
+                      {"role": "user", "content": f"Document title: {title}\n{extra}\nPassage:\n{passage}"}],
             response_format={"type": "json_object"}, max_completion_tokens=2000)
         return json.loads(resp.choices[0].message.content)
     except Exception as e:  # noqa: BLE001
@@ -151,11 +180,14 @@ def main() -> int:
             if not pool:
                 continue
             order = pool[:: max(1, len(pool)//MAX_TRIES)][:MAX_TRIES]
+            inst_name, inst_tokens = institution(filename)
+            extra = (f"The issuing institution is {inst_name} — name it in the question.\n"
+                     if MODE == "descriptive" else "")
             accepted = 0
             for cid, cstart, cend, page, text in order:
                 if accepted >= CAP:
                     break
-                out = call_llm(client, model, filename, text)
+                out = call_llm(client, model, filename, text, extra)
                 if not out or not all(k in out for k in ("question", "uniqueness_anchor", "supporting_quote")):
                     failed += 1
                     continue
@@ -170,7 +202,7 @@ def main() -> int:
                 if (len(g) < MIN_GOLD_LEN or len(g) > MAX_GOLD_LEN or len(g.split()) < MIN_GOLD_WORDS
                         or META.search(g) or TOC.search(g)):
                     continue
-                if MODE == "descriptive" and not descriptive_ok(out["question"], g):
+                if MODE == "descriptive" and not descriptive_ok(out["question"], out["uniqueness_anchor"], g, inst_tokens):
                     continue
                 conn.execute(
                     """INSERT INTO eval_questions
