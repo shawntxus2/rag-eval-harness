@@ -72,9 +72,12 @@ Every parameter is an environment variable (see `.env.example`). Copy it to `.en
 | `DEVICE` | `auto` | `auto`/`cuda`/`mps`/`cpu` |
 | `CHUNK_SIZE` / `CHUNK_OVERLAP` | `500` / `50` | chunk grain (tokens) |
 | `RRF_K` | `60` | Reciprocal Rank Fusion constant |
-| `TOP_K` | `50` | candidate depth (hybrid → rerank takes top 50) |
+| `RETRIEVAL_DEPTH` | `100` | candidates each arm returns before fusion |
+| `TOP_K` | `50` | hybrid candidates handed to the reranker |
 | `RERANK_MODEL` | `BAAI/bge-reranker-base` | cross-encoder reranker |
-| `CORRECTNESS_RULE` | `span_overlap` | what counts as a correct retrieval |
+| `CORRECTNESS_RULE` | `span_contains` | hit = a top-k chunk from the gold doc fully contains the gold span |
+| `TORCH_DTYPE` | `fp16` | inference precision, held constant across all runs (embedding + reranker) |
+| `USE_QUERY_INSTRUCTION` | `true` | apply the bge s2p query instruction (query only); chosen by A/B |
 | `GENERATION_PROVIDER` | `openai` | generation provider seam (`openai` wired; `anthropic` reserved) |
 | `GENERATION_MODEL` | `gpt-5.6-terra` | generation model (must be reachable by your `OPENAI_API_KEY`) |
 | `OPENAI_API_KEY` | — | OpenAI key; read from env, never committed. Missing/rejected → fails loudly |
