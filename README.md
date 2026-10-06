@@ -385,8 +385,8 @@ should its board limit procyclical swings in those discounts and margins?"
 - [x] **Phase 3** — four retrieval modes (same signature; symmetry asserted; self-retrieval 20/20)
 - [x] **Phase 4** — evaluation: split cited/descriptive, span-containment, McNemar significance
 - [x] **Phase 5** — generation: retrieve → answer with grounded `[n]` citations (OpenAI)
-- [ ] Phase 6 — Streamlit UI
-- [ ] Domain-drift finding (written up here)
+- [x] **Phase 6** — Streamlit UI (`streamlit run app.py`): ask tab + evaluation table
+- [x] **Domain-drift finding** — nine terms, embedding nearest neighbours, written up above
 
 ## Results
 
@@ -420,17 +420,31 @@ rerank, and **vector+rerank** (cross-encoder over vector's top 50, skipping lexi
 excluded): vector ≈ 3 ms; lexical & hybrid 45–170 ms; hybrid+rerank 183–265 ms;
 **vector+rerank 94–135 ms**.
 
-**Significant differences (McNemar exact, paired hit@5, p<0.05):**
-- **vector+rerank is the cited winner and dominates hybrid+rerank:** significant over
-  plain vector at all sizes (p=.001/.000/.001); vs hybrid+rerank it is *equal in recall*
-  (p=.125/.50/1.0) at **~half the latency** — it reranks vector's clean list instead of
-  the lexical-damaged fused list. On cited 250 it reaches **.73 (37/51)**, the table's best.
-- **hybrid+rerank > hybrid:** significant on cited at all sizes; on descriptive only at 250.
-- **vector > lexical:** significant on descriptive 250/500 and cited 250. **hybrid never
-  significantly beats vector** (closest cited 500/1000, not significant).
-- **Chunk size follows query type (vector):** cited **250 > 500** (24 vs 16, p=.039) and
-  descriptive **500 > 250** (21 vs 12, p=.035) — two significant inversions in opposite
-  directions. Rerank modes are robust to chunk size (no size pair significant).
+**Multiple comparisons — read the findings in two groups.** The scorer runs **60 McNemar
+tests** (30 mode-pair + 30 chunk-size-pair; the MiniLM comparison adds 2). At α=0.05 that
+is ~3 false positives expected by chance, and a Bonferroni threshold of ≈0.0008. So a
+single cell at p≈.04 is not a result; a large effect repeated across cells is.
+
+*Robust* (large, consistent across cells, and/or corroborated by the sweep and latency):
+- **vector+rerank is the cited winner and dominates hybrid+rerank:** beats plain vector on
+  all three cited sizes (p=.001/.000/.001 — the .000 cells clear Bonferroni, all three
+  agree in direction), yet is *statistically equal* to hybrid+rerank (p=.125/.50/1.0) at
+  **~half the latency**. It reranks vector's clean list instead of the lexical-damaged
+  fused one; cited 250 reaches **.73 (37/51)**.
+- **hybrid+rerank > hybrid** on cited at all three sizes (p=.000/.000/.031; first two clear
+  Bonferroni).
+- **vector > lexical** — same direction in every cell, significant uncorrected on
+  descriptive 250/500 and cited 250, and corroborated by the weight sweep and latency below.
+  **No hybrid-over-vector difference is significant** in any cell.
+
+*Suggestive, not demonstrated:*
+- **Chunk size appears to follow query type** — for vector, cited **250 > 500** (p=.039) and
+  descriptive **500 > 250** (p=.035). The two point in **opposite directions, exactly as the
+  span-containment mechanism predicts** (short cited answers fit a 250 window; longer
+  descriptive spans need 500). But each is a single cell at uncorrected p≈.04; **neither
+  survives correction** for 60 tests. Confirming it would need a pre-registered directional
+  test or a second corpus. Reported as a lead, not a finding. (Rerank modes show no
+  size-pair difference at all.)
 
 **Weighted-RRF sweep (`scripts/rrf_sweep.py`), descriptive:** equal weighting is why
 fusion imports lexical's errors. Up-weighting vector recovers most of the loss but
@@ -445,26 +459,98 @@ containing the exact rule number. `ts_rank_cd` has **no IDF**, so the rare ident
 one term among many and never dominates ranking. A real BM25 arm would likely flip the
 cited column; the comparison is only honest with that named.
 
-**Large-chunk bias, named:** bigger chunks return ~4× the text for no recall gain
-(cited vector+rerank .73 @250 ≈ .65 @500 ≈ .61 @1000 at 1×/2×/4× the tokens). recall@250
-is capped at the containment **ceiling 0.96** (two gold spans straddle a 250-token
-boundary); 500/1000 ceilings are 1.00.
+**Recall against the achievable ceiling, not just raw.** A hit requires a single chunk to
+*contain the whole* gold span, so each run has a containment ceiling (fraction of
+questions some chunk in that run can contain). At 250 the ceiling is **0.96** — two gold
+spans straddle a chunk boundary, which is a harness property, not a retrieval failure — so
+cited vector+rerank @250 is **.73 of a possible .96**, not .73 of 1.0. At 500/1000 the
+ceiling is 1.00, so descriptive vector @500 is **.41 of a possible 1.00**.
+
+**Large-chunk bias, named:** bigger chunks return ~4× the text for no recall gain — cited
+vector+rerank .73 @250 ≈ .65 @500 ≈ .61 @1000 at 1×/2×/4× the `tok@5`.
+
+**MiniLM — is 384 dimensions enough? (scoped, `scripts/score_minilm.py`)** Scored at the
+two winning configs only (not the full matrix — that would add 60 tests to the pile above).
+cited vector+rerank @250: bge **.73** vs MiniLM **.67** (p=.45); descriptive vector @500:
+bge **.41** vs MiniLM **.31** (p=.33). **Neither difference is significant at N=51** — bge
+is numerically ahead, widest on descriptive. Verdict: half the dimensions carry no
+*demonstrated* penalty here, so MiniLM is a viable cheaper option; the descriptive gap
+(.31 vs .41) is the one worth re-testing on a larger question set before relying on it.
 
 **Descriptive uniqueness floor:** `scripts/check_uniqueness.py` dropped **6%** with a
 clear second home; ~80% have a topically-related (non-answering) passage elsewhere, valid
 under single-gold scoring. In a corpus built for overlap, that residual is a known floor —
 some natural-language questions legitimately have more than one home, counted as misses.
 
-### Conclusions (each supported by the numbers above)
+### Conclusions
 
-- **Chunk size should follow query type: 250 for cited, 500 for descriptive.** The two
-  vector inversions are significant and opposite (cited 250>500 p=.039; descriptive
-  500>250 p=.035); 1000 never wins and costs 4× the tokens.
 - **The lexical arm costs 15–50× vector's latency and contributes negative recall on
-  descriptive.** Lexical p50 45–170 ms vs vector ~3 ms; fusing it *lowers* descriptive
-  recall (hybrid .27 < vector .41 @500) and no RRF weight recovers it.
+  descriptive questions.** Lexical p50 45–170 ms vs vector ~3 ms; fusing it *lowers*
+  descriptive recall (hybrid .27 < vector .41 @500) and no RRF weight (up to 8:1) recovers
+  it. (Robust.)
 - **`ts_rank_cd` without IDF cannot exploit a rare identifier**, which is why citation
   anchors did not favour lexical and why a true BM25 arm would likely flip the cited
-  column. Best configs: **vector+rerank @250 on cited (.73)** — equal to hybrid+rerank at
-  half the latency; **plain vector @500 on descriptive (.41)** — reranking and fusion
-  both fail to beat it.
+  column. (Robust — corroborated by lexical being weakest even on cited.)
+- **Best configs: vector+rerank @250 on cited (.73 of a possible .96)** — equal to
+  hybrid+rerank at half the latency; **plain vector @500 on descriptive (.41 of 1.00)** —
+  reranking and fusion both fail to beat it. (Robust.)
+- **Chunk size *may* want to follow query type — 250 for cited, 500 for descriptive.**
+  (Suggestive only; see the caveat above — two single-cell p≈.04 results that don't survive
+  correction.)
+
+### What I would change if the corpus doubled
+
+Grounded in the numbers above, not in general advice:
+
+1. **Add a real BM25 lexical arm before trusting the lexical or hybrid columns.** `ts_rank_cd`
+   makes lexical the weakest arm even on cited (.24–.27), and the weight sweep shows fusion
+   never beats vector on descriptive. With IDF the rare citation token would carry weight;
+   until then, hybrid is importing a broken arm's errors.
+2. **Default to vector+rerank, not hybrid+rerank.** Equal cited recall (.73/.65/.61 vs
+   .65/.69/.59) at ~half the latency (94–135 ms vs 183–265 ms), because it skips the
+   45–170 ms lexical retrieval entirely. Doubling the corpus roughly doubles the lexical
+   scan cost, widening that gap.
+3. **Keep chunks at 250–500 tokens.** 1000 never wins and returns 4× the text (`tok@5`
+   ~5,000 vs ~1,250); larger chunks only cost more generation context for no recall.
+4. **Route by query type if a second corpus confirms the inversion** — 250 for
+   citation-style queries, 500 for paraphrase. Today it is a lead, not a rule.
+5. **MiniLM is a viable cheaper index** (no significant penalty at the winners); re-test the
+   descriptive gap (.31 vs .41) at the larger N a doubled corpus would allow — the kind of
+   difference that is noise at N=51 and real at N=150.
+6. **Watch the containment ceiling.** recall@250 is already capped at .96 by spans that
+   straddle a boundary; a bigger corpus with longer gold spans lowers that ceiling, so keep
+   gold spans short or raise the floor chunk size.
+
+## Domain drift
+
+Nine terms whose everyday English meaning is unrelated to their meaning in market
+regulation. `scripts/drift.py` embeds the **bare term** (bge-base, no query instruction)
+and reports its nearest-neighbour chunks in the corpus — the question for each is whether
+the model places the lone word next to its **domain** sense or its **general-language**
+sense.
+
+| term | everyday meaning | domain meaning | nearest neighbour | verdict |
+|---|---|---|---|---|
+| haircut | a hair trim | valuation discount on collateral | "…in support of imposing lower **haircuts**…" (sec_2013_financial_responsibility p34) | domain |
+| waterfall | a cascade of water | ordered sequence of default resources | "…the default **waterfall**, including the use of margin and a guaranty or clearing fund…" (sec_2016_covered_clearing_agencies p28) | domain |
+| margin | the blank edge of a page | collateral posted against positions | "…Initial **margin**…" / "5. **Margin**…" (bis_2022_review_margining_practices p5) | domain |
+| exposure | being exposed; a photo frame | amount at risk to a counterparty | "…Potential future **exposure** means the maximum exposure estimated to occur…" (sec_2016_covered_clearing_agencies p117) | domain |
+| netting | mesh; catching with a net | offsetting mutual obligations to a net | "…**Netting** An agreement to offset mutual positions or obligations…" (occ_2002_custody_services p84) | domain |
+| position | a job, posture, or place | a holding in a security/contract | "…a gross short **position** in an ETF…" (sec_2023_short_sale_reporting p88) | domain |
+| settlement | resolving a dispute; a town | final transfer of securities and cash | "…address **settlement** finality… the point at which settlement is final…" (sec_2016_covered_clearing_agencies p40) | domain |
+| clearing | an open space; removing | post-trade processing via a CCP | "…at the **clearing** agency to clear securities for itself or on behalf of other persons…" (sec_2016_covered_clearing_agencies p74) | domain |
+| collateral | secondary ("collateral damage") | assets pledged to secure an obligation | "…sufficient **collateral** value to secure a borrowing…" (dtcc_2023_dtc_disclosure_framework p54) | domain |
+
+**All nine resolve to the domain sense; none surfaced the everyday meaning.** bge, cued by
+nothing but the lone polysemous word, lands in the financial neighbourhood every time — it
+does not drag in the general-language sense. Two are shallower than the rest: `margin`'s
+top neighbours are section headings that merely list the word, and `position`'s second
+neighbour is a governance passage using it loosely — both still domain, neither everyday.
+
+**Honest scope of the test.** The corpus is single-domain, so the *nearest chunks* are
+domain by construction; what this demonstrates is the complementary point — the embedding
+does **not inject** the everyday meaning when only the bare word is given (no spurious
+drift toward hair, water, or page margins). A sharper test — can the model *disambiguate*
+the domain sense against a general-language distractor — would need a mixed corpus with
+both senses present; that is the natural next experiment, and the drift terms above are
+the probe set for it.
