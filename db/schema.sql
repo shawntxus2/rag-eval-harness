@@ -101,17 +101,24 @@ CREATE TABLE IF NOT EXISTS eval_questions (
                          CHECK (status IN ('candidate','approved','rejected')),
     verified_at         TIMESTAMPTZ,
     uniqueness_anchor   TEXT,                      -- the detail that makes the question answerable from exactly one document (section/rule no., date, threshold, named entity, defined term)
+    question_type       TEXT CHECK (question_type IN ('cited','descriptive')),  -- cited: contains an exact identifier/quoted phrase from the doc; descriptive: concept in the user's own words, no citation/quote/rare token
     gold_overlap        DOUBLE PRECISION,          -- content-word overlap of question vs gold span (paraphrase check; high => quoting)
     notes               TEXT,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 -- Scoring reads the gold CHARACTER SPAN (source_document_id + gold_char_start/end in
 -- cleaned text), not answer_chunk_id, so one question scores across all chunk sizes.
+-- HIT SEMANTICS: retrieval runs over the WHOLE corpus (all chunks in the run); a chunk
+-- is a hit iff it is from source_document_id AND fully contains [gold_char_start,
+-- gold_char_end]. Retrieval is never restricted to the source document.
 ALTER TABLE eval_questions ADD COLUMN IF NOT EXISTS uniqueness_anchor TEXT;
 ALTER TABLE eval_questions ADD COLUMN IF NOT EXISTS gold_overlap DOUBLE PRECISION;
 ALTER TABLE eval_questions ADD COLUMN IF NOT EXISTS generator_model TEXT;
+ALTER TABLE eval_questions ADD COLUMN IF NOT EXISTS question_type TEXT;
 ALTER TABLE eval_questions DROP CONSTRAINT IF EXISTS eval_questions_generated_by_check;
 ALTER TABLE eval_questions ADD CONSTRAINT eval_questions_generated_by_check CHECK (generated_by IN ('openai','claude','human'));
+ALTER TABLE eval_questions DROP CONSTRAINT IF EXISTS eval_questions_question_type_check;
+ALTER TABLE eval_questions ADD CONSTRAINT eval_questions_question_type_check CHECK (question_type IS NULL OR question_type IN ('cited','descriptive'));
 
 CREATE INDEX IF NOT EXISTS eval_questions_verified_idx ON eval_questions (human_verified, status);
 
