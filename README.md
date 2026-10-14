@@ -1,12 +1,22 @@
 # rag-eval-harness
 
 A retrieval-augmented generation system built from primitives, with a measurement
-harness that compares four retrieval strategies on the same question set over
+harness that compares five retrieval strategies on the same question set over
 **your own** PDF corpus.
 
 The point is not a demo. The point is numbers: recall and latency for
-**vector-only**, **lexical-only**, **hybrid (RRF)**, and **hybrid + reranking**,
+**vector**, **lexical**, **hybrid (RRF)**, **hybrid+rerank**, and **vector+rerank**,
 across three chunk sizes, on your documents.
+
+**Findings.** On cited questions, recall comes from reranking the vector list:
+vector+rerank reaches recall@5 .73 at 250-token chunks, against .47 for plain vector
+and .24 for lexical, and it matches hybrid+rerank at about half the latency
+(94–135 ms vs 183–265 ms per query) without the lexical arm. On descriptive questions
+nothing beats plain vector (recall@5 .41 at 500 tokens); reranking and fusion both fail
+to improve it, and adding the lexical arm lowers recall. Vector retrieval alone runs
+about 3 ms per query, while the lexical and hybrid arms cost 45–170 ms for lower recall
+than vector+rerank. See [Results](#results) for the full tables, significance testing,
+and caveats.
 
 ## Architecture (at a glance)
 
@@ -393,28 +403,30 @@ should its board limit procyclical swings in those discounts and margins?"
 Scored on **bge-base, fp16**, over **51 cited + 51 descriptive** questions, split by
 type and **never pooled** (`scripts/score.py` → `eval_runs`/`eval_results`). Retrieval is
 corpus-wide; a hit is a top-k chunk **from the gold document that fully contains the gold
-span**. recall@5 as rate (hits/51). Five modes: vector, lexical, hybrid (RRF), hybrid+
-rerank, and **vector+rerank** (cross-encoder over vector's top 50, skipping lexical).
+span**. Recall is a rate (hits/51); MRR is mean reciprocal rank. Five modes: vector,
+lexical, hybrid (RRF), hybrid+rerank, and **vector+rerank** (cross-encoder over vector's
+top 50, skipping lexical). Each cell is **recall@5 / recall@10 / MRR**; columns are the
+chunk sizes 250 / 500 / 1000. recall@5 winners are bold.
 
-**recall@5 — cited**
-
-| mode | 250 | 500 | 1000 |
-|---|---|---|---|
-| vector | .47 | .31 | .31 |
-| lexical | .24 | .27 | .25 |
-| hybrid | .41 | .41 | .39 |
-| hybrid+rerank | .65 | **.69** | .59 |
-| vector+rerank | **.73** | .65 | .61 |
-
-**recall@5 — descriptive**
+**cited**
 
 | mode | 250 | 500 | 1000 |
 |---|---|---|---|
-| vector | .24 | **.41** | .35 |
-| lexical | .10 | .16 | .20 |
-| hybrid | .16 | .27 | .25 |
-| hybrid+rerank | .29 | .33 | .27 |
-| vector+rerank | .33 | .35 | .27 |
+| vector | .47 / .49 / .32 | .31 / .47 / .20 | .31 / .51 / .20 |
+| lexical | .24 / .33 / .19 | .27 / .31 / .17 | .25 / .31 / .19 |
+| hybrid | .41 / .57 / .33 | .41 / .63 / .27 | .39 / .51 / .29 |
+| hybrid+rerank | .65 / .69 / .54 | **.69** / .71 / .52 | .59 / .65 / .44 |
+| vector+rerank | **.73** / .75 / .57 | .65 / .75 / .52 | .61 / .67 / .43 |
+
+**descriptive**
+
+| mode | 250 | 500 | 1000 |
+|---|---|---|---|
+| vector | .24 / .33 / .16 | **.41** / .49 / .25 | .35 / .41 / .21 |
+| lexical | .10 / .12 / .07 | .16 / .24 / .13 | .20 / .27 / .14 |
+| hybrid | .16 / .25 / .14 | .27 / .35 / .21 | .25 / .33 / .18 |
+| hybrid+rerank | .29 / .37 / .17 | .33 / .47 / .21 | .27 / .35 / .15 |
+| vector+rerank | .33 / .41 / .18 | .35 / .49 / .23 | .27 / .35 / .16 |
 
 `tok@5` ≈ 1,250 / 2,500 / 5,000 at 250/500/1000. Retrieval-step p50 (query-embed ~6 ms
 excluded): vector ≈ 3 ms; lexical & hybrid 45–170 ms; hybrid+rerank 183–265 ms;
